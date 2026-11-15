@@ -1,0 +1,57 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>FINN</title>
+<style>
+:root{--bg:#0b0d10;--card:#14181d;--line:#232a33;--tx:#e8ecf1;--mut:#8b96a5;--g:#2fbf71;--r:#ef5350;--a:#f5b942;--b:#5b9cff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.4 -apple-system,system-ui,sans-serif;padding:env(safe-area-inset-top) 0 calc(64px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;background:var(--bg);padding:12px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;z-index:5}
+h1{font-size:18px;margin:0;letter-spacing:.5px}select,input,button{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+main{padding:12px 16px}.sec{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:8px}
+.top{display:flex;justify-content:space-between;gap:8px}.sym{font-weight:700}.tag{font-size:10px;padding:2px 7px;border-radius:99px;border:1px solid var(--line);color:var(--mut)}
+.crit{border-left:3px solid var(--r)}.not{border-left:3px solid var(--a)}.mut{color:var(--mut);font-size:12px}
+a{color:var(--b);text-decoration:none}button.p{background:var(--b);color:#fff;border:0;margin-top:8px}
+table{width:100%;border-collapse:collapse;margin-top:8px}td,th{padding:5px 2px;text-align:right;font-size:13px}td:first-child,th:first-child{text-align:left}th{color:var(--mut);font-weight:500;font-size:11px}
+.up{color:var(--g)}.dn{color:var(--r)}nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#0f1216;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;padding:14px 0;color:var(--mut);border-radius:0}nav button.on{color:var(--tx);font-weight:700}
+.row{display:flex;gap:8px;align-items:center}input[type=range]{width:100%;padding:0}details summary{cursor:pointer;color:var(--mut)}
+.s-met{color:var(--g)}.s-missed{color:var(--r)}.s-partial{color:var(--a)}.s-unclear{color:var(--mut)}
+</style></head><body>
+<header><h1>FINN</h1><select id="win"><option value="24">Last 24h</option><option value="72">3 days</option><option value="168">7 days</option><option value="720">30 days</option></select></header>
+<main id="m"></main>
+<nav><button data-t="feed" class="on">Feed</button><button data-t="alerts">Alerts</button><button data-t="ask">Ask FINN</button></nav>
+<script>
+const $=s=>document.querySelector(s),m=$('#m');let tab='feed',cfg={vol:2,move:4};
+const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const safeHref=s=>{try{const u=new URL(s);return ['http:','https:'].includes(u.protocol)?esc(u.href):''}catch{return ''}};
+const J=async u=>{const r=await fetch(u);if(!r.ok)throw new Error((await r.json()).detail||r.status);return r.json()};
+const KIND={results:'Results',mgmt:'Management',ma:'M&A',capital:'Capital',risk:'Risk',order:'Order',rating:'Rating',other:'Other'};
+function item(a,cls){const href=safeHref(a.url);return `<div class="card ${cls}"><div class="top"><span class="sym">${esc(a.symbol)}</span><span class="tag">${a.source==='DEMO'?'DEMO · ':''}${KIND[a.kind]||'Other'}</span></div>
+<div style="margin:4px 0">${esc(a.title)}</div><div class="mut">${esc(a.detail)}</div><div class="mut">${esc(a.ts)} ${href?` · <a target="_blank" rel="noopener noreferrer" href="${href}">original filing</a>`:''}</div>
+${a.kind=='results'&&a.url?`<button class="p" onclick="res('${a.id}',this)">Headline numbers</button><div></div>`:''}</div>`}
+async function res(id,b){b.disabled=1;b.textContent='Reading filing…';const d=b.nextElementSibling;
+ try{const r=await J('/api/results/'+encodeURIComponent(id)),f=v=>v==null?'–':`<span class="${v>=0?'up':'dn'}">${v>0?'+':''}${v}%</span>`;
+ const href=safeHref(r.source_url);d.innerHTML=`<div class="mut" style="margin-top:8px">${esc(r.quarter)} · ${esc(r.unit)} · filing ${esc(r.source_ts)}${href?` · <a target="_blank" rel="noopener noreferrer" href="${href}">verify filing</a>`:''}</div><table><tr><th></th><th>This Q</th><th>QoQ</th><th>YoY</th></tr>${r.rows.map(x=>`<tr><td>${esc(x.metric)}</td><td>${x.cur??'–'}</td><td>${f(x.qoq)}</td><td>${f(x.yoy)}</td></tr>`).join('')}</table>`;b.remove()}
+ catch(e){b.textContent='Failed – retry';b.disabled=0;d.innerHTML=`<div class="mut">${esc(e.message)}</div>`}}
+async function feed(){m.innerHTML='Loading…';const [d,s]=await Promise.all([J('/api/feed?hours='+$('#win').value),J('/api/status').catch(e=>({error:e.message}))]);
+ const freshness=s.error?`Data freshness unavailable: ${esc(s.error)}`:`Market data through ${esc(s.prices_through||'unknown')} · filings through ${esc(s.filings_through||'unknown')}${s.demo_filings?` · ${s.demo_filings} seeded demo filings`:''}`;
+ m.innerHTML=`<div class="mut">${freshness}</div><div class="mut" style="margin-top:6px">${d.counts.critical} need attention · ${d.counts.notable} notable · ${d.counts.routine} routine hidden</div>
+ ${d.critical.length?'<div class="sec">Needs attention</div>'+d.critical.map(a=>item(a,'crit')).join(''):''}
+ ${d.notable.length?'<div class="sec">Notable</div>'+d.notable.map(a=>item(a,'not')).join(''):''}
+ ${d.routine.length?`<details class="sec"><summary>${d.routine.length} routine filings</summary>${d.routine.map(a=>`<div class="mut" style="padding:6px 0;border-bottom:1px solid var(--line)"><b>${esc(a.symbol)}</b> ${esc(a.title)}</div>`).join('')}</details>`:''}
+ ${!d.critical.length&&!d.notable.length&&!d.routine.length?'<div class="card mut">No filings in this window. Try a wider period or refresh the source data.</div>':''}`}
+async function alerts(){const state=await J('/api/status').catch(e=>({error:e.message}));m.innerHTML=`${state.demo_filings?'<div class="card not">Demo mode: seeded prices and filings are simulated, not live market data.</div>':''}${state.error?`<div class="mut">Data status unavailable: ${esc(state.error)}</div>`:''}<div class="card"><div>Volume ≥ <b id="vv">${cfg.vol}</b>× 20-day avg</div><input type=range min=1 max=6 step=.5 value=${cfg.vol} id=sv>
+<div style="margin-top:10px">Price move ≥ <b id="mv">${cfg.move}</b>%</div><input type=range min=1 max=10 step=.5 value=${cfg.move} id=sm></div><div id=al></div>`;
+ const go=async()=>{cfg.vol=+$('#sv').value;cfg.move=+$('#sm').value;$('#vv').textContent=cfg.vol;$('#mv').textContent=cfg.move;
+  const d=await J(`/api/alerts?vol=${cfg.vol}&move=${cfg.move}`);$('#al').innerHTML=d.length?d.map(a=>`<div class="card ${a.move_pct>=0?'':'crit'}"><div class="top"><span class="sym">${a.symbol}</span><span class="${a.move_pct>=0?'up':'dn'}">${a.move_pct>0?'+':''}${a.move_pct}%</span></div><div class="mut">${a.why.join(' · ')} · ${a.date}</div></div>`).join(''):'<div class="mut">Nothing unusual at these thresholds.</div>'};
+ $('#sv').oninput=$('#sm').oninput=go;go()}
+async function ask(){const u=await J('/api/universe').catch(()=>[]);
+ m.innerHTML=`<div class="card"><div class="mut">Grounded only in the last 4 concall transcripts. Works for any NSE symbol.</div><div class="row" style="margin-top:8px"><input id=sy list=u placeholder="Symbol e.g. TRENT" style="flex:1;text-transform:uppercase"><datalist id=u>${u.map(x=>`<option>${x}`).join('')}</datalist><button class="p" id=go style="margin:0">Promised vs delivered</button></div></div><div id=out></div>`;
+ $('#go').onclick=async()=>{const s=$('#sy').value.trim().toUpperCase();if(!s)return;$('#out').innerHTML='<div class="mut">Reading transcripts… (first run is slow, then cached)</div>';
+  try{const r=await J('/api/research/'+encodeURIComponent(s)),sources=(r.sources||[]).map((x,i)=>{const h=safeHref(x.url);return h?`<a target="_blank" rel="noopener noreferrer" href="${h}">${esc(x.period||`Call ${i+1}`)}</a>`:''}).filter(Boolean);
+   $('#out').innerHTML=`<div class="card"><b>${esc(r.verdict)}</b><div class="mut">Calls: ${(r.calls_used||[]).map(esc).join(' → ')}</div><div class="mut">Sources: ${sources.join(' · ')||'None returned'}</div></div>`+
+   (r.items||[]).map(i=>`<div class="card"><div class="top"><span>${esc(i.promise)}</span><b class="s-${esc(i.status)}">${esc(i.status)}</b></div><div style="margin:4px 0">${esc(i.delivered)}</div><div class="mut">“${esc(i.quote)}” — ${esc(i.promised_in)}</div></div>`).join('')+(r.watch?`<div class="card not"><span class="mut">Watch next</span><br>${esc(r.watch)}</div>`:'')}
+  catch(e){$('#out').innerHTML=`<div class="card crit">${esc(e.message)}</div>`}}}
+const T={feed,alerts,ask},go=()=>T[tab]().catch(e=>m.innerHTML=`<div class="card crit">${esc(e.message)}</div>`);
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x==b));go()});
+$('#win').onchange=()=>tab=='feed'&&go();go();
+</script></body></html>
