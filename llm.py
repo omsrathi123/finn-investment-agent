@@ -8,8 +8,8 @@ if _env.exists():
             k, v = line.split("=", 1)
             os.environ.setdefault(k.strip(), v.strip())
 from config import CACHE
-FAST = os.getenv("FINN_FAST_MODEL", "gemini-2.0-flash")
-SMART = os.getenv("FINN_SMART_MODEL", "gemini-2.5-flash")
+FAST = os.getenv("FINN_FAST_MODEL", "gemini-3.5-flash-lite")
+SMART = os.getenv("FINN_SMART_MODEL", "gemini-3.8-flash")
 
 def ask_json(prompt, model=FAST):
     """Cached JSON-mode call. Same prompt+model never costs twice."""
@@ -19,7 +19,7 @@ def ask_json(prompt, model=FAST):
     k = os.getenv("GEMINI_API_KEY")
     if not k: raise RuntimeError("GEMINI_API_KEY not set")
     r = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-        params={"key": k}, timeout=120,
+        headers={"x-goog-api-key": k}, timeout=120,
         json={"contents": [{"parts": [{"text": prompt}]}],
               "generationConfig": {"responseMimeType": "application/json", "temperature": 0.1}})
     r.raise_for_status()

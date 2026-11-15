@@ -80,7 +80,7 @@ flowchart TD
 ### Persistence, configuration and boundaries
 
 - SQLite defaults to `data/finn.db`; caches default to `data/cache`. Set `FINN_DB_PATH` and `FINN_CACHE_DIR` to move them (Render configures both under `/tmp`).
-- Gemini-powered extraction requires `GEMINI_API_KEY` on a cache miss. `FINN_FAST_MODEL` and `FINN_SMART_MODEL` can override the default Gemini models. Price, filing and stock-detail screens do not require Gemini.
+- Gemini-powered extraction requires `GEMINI_API_KEY` on a cache miss. Defaults are `gemini-3.5-flash-lite` for FAST extraction and `gemini-3.8-flash` for SMART comparison; `FINN_FAST_MODEL` and `FINN_SMART_MODEL` can override them. Price, filing and stock-detail screens do not require Gemini.
 - This prototype has no user accounts, live quote stream, push notifications or scheduled refresh. Yahoo/NSE/BSE availability and rate limits can affect refresh results; displayed metrics and news include source/freshness context where available.
 - Seeded prices are simulated, not historical market data. The free Render service uses temporary storage, and its startup seed recreates demo data after restarts.
 - Annual-report links are collected, but current pull analysis uses concall transcripts only. It is an investor research aid, not investment advice.

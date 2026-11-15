@@ -1,3 +1,4 @@
+import os
 import sqlite3
 import tempfile
 import time
@@ -6,6 +7,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import app
+import llm
 import research
 import results
 import stock_detail
@@ -51,6 +53,22 @@ class SourceTests(unittest.TestCase):
         with patch.object(app, "conn", return_value=db):
             self.assertEqual(app.health(), {"status": "ok"})
         db.close()
+
+    def test_gemini_request_sends_api_key_in_header_not_url(self):
+        response = MagicMock()
+        response.json.return_value = {
+            "candidates": [{"content": {"parts": [{"text": '{"ok": true}'}]}}],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.object(llm, "CACHE", Path(directory)), \
+                 patch.object(llm.requests, "post", return_value=response) as post, \
+                 patch.dict(os.environ, {"GEMINI_API_KEY": "test-key-not-real"}):
+                result = llm.ask_json("test prompt", "gemini-3.5-flash-lite")
+
+        args, kwargs = post.call_args
+        self.assertNotIn("key=", args[0])
+        self.assertEqual(kwargs["headers"]["x-goog-api-key"], "test-key-not-real")
+        self.assertEqual(result, {"ok": True})
 
     def test_results_card_returns_primary_filing_link(self):
         row = {
