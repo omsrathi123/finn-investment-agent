@@ -4,6 +4,8 @@ FINN is a mobile-first triage tool for an Indian equity investor. Its point of v
 not a dashboard.** Everything that reaches the screen has been scored for materiality, related filings are folded
 into one event, routine paperwork is counted rather than shown, and every number links back to the primary source.
 
+**Live app:** [finnportfoliobyiom.vercel.app](https://finnportfoliobyiom.vercel.app/)
+
 It works in the two modes the brief asks for:
 
 | | What it does | Where |
