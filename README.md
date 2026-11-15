@@ -25,27 +25,16 @@ The seed script creates simulated prices and clearly marked demo filings so the 
 
 ## Deploy a shareable app
 
+**Source repository:** [omsrathi123/finn-investment-agent](https://github.com/omsrathi123/finn-investment-agent)
+
 GitHub hosts the source; Render runs the FastAPI backend. GitHub Pages alone cannot run FINN's Python API. This repository includes a Render Blueprint in `render.yaml` and a GitHub Actions workflow that runs focused tests on pushes and pull requests.
 
-1. Publish this project to a GitHub repository using the commands below.
-2. In Render, choose **New → Blueprint** and select that repository.
+1. Sign in to Render with GitHub and choose **New → Blueprint**.
+2. Select `omsrathi123/finn-investment-agent`; Render reads its `render.yaml`.
 3. Set `GEMINI_API_KEY` in Render's environment settings to enable PDF and transcript analysis. Do not commit the key or put it in GitHub files.
 4. Share the deployed `*.onrender.com` URL with reviewers; the mobile-friendly app is served at `/`.
 
 The free service uses temporary storage. Demo data is seeded at startup, but manually fetched data and cached model/PDF results can be lost when the service restarts. Data refresh is not scheduled.
-
-## Publish the source on GitHub
-
-Create an empty GitHub repository, then from this project directory run:
-
-```powershell
-git init
-git add .
-git commit -m "Initial FINN prototype"
-git branch -M main
-git remote add origin https://github.com/OWNER/REPOSITORY.git
-git push -u origin main
-```
 
 `.gitignore` excludes local environments, `.env`, the SQLite database and fetched caches. The demo dataset can be recreated with `python seed_demo.py`.
 
