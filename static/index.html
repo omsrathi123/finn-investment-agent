@@ -42,7 +42,8 @@ async function res(id,b){b.disabled=1;b.textContent='Reading filing…';const d=
  catch(e){b.textContent='Failed – retry';b.disabled=0;d.innerHTML=`<div class="mut">${esc(e.message)}</div>`}}
 async function feed(){m.innerHTML='Loading…';const [d,s]=await Promise.all([J('/api/feed?hours='+$('#win').value),J('/api/status').catch(e=>({error:e.message}))]);
  const freshness=s.error?`Data freshness unavailable: ${esc(s.error)}`:`Market data through ${esc(s.prices_through||'unknown')} · filings through ${esc(s.filings_through||'unknown')}${s.demo_filings?` · ${s.demo_filings} seeded demo filings`:''}`;
- m.innerHTML=`<div class="mut">${freshness}</div><div class="mut" style="margin-top:6px">${d.counts.critical} need attention · ${d.counts.notable} notable · ${d.counts.routine} routine hidden</div>
+ const demoNotice=s.demo_filings?'<div class="card not">These are simulated demo filings, not live announcements. Live NSE/BSE checks are currently available per stock via Refresh sources.</div>':'';
+ m.innerHTML=`${demoNotice}<div class="mut">${freshness}</div><div class="mut" style="margin-top:6px">${d.counts.critical} need attention · ${d.counts.notable} notable · ${d.counts.routine} routine hidden</div>
  ${d.critical.length?'<div class="sec">Needs attention</div>'+d.critical.map(a=>item(a,'crit')).join(''):''}
  ${d.notable.length?'<div class="sec">Notable</div>'+d.notable.map(a=>item(a,'not')).join(''):''}
  ${d.routine.length?`<details class="sec"><summary>${d.routine.length} routine filings</summary>${d.routine.map(a=>`<div class="mut" style="padding:6px 0;border-bottom:1px solid var(--line)"><b>${esc(a.symbol)}</b> ${esc(a.title)}</div>`).join('')}</details>`:''}

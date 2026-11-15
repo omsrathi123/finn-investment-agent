@@ -18,8 +18,9 @@ def seed_demo():
     demo = [("RELIANCE", "Financial Results", "Outcome of Board Meeting - Q2 results"), ("INFY", "Change in Management", "Resignation of Chief Financial Officer"),
             ("LT", "Acquisition", "Acquisition of 51% stake in engineering firm"), ("TCS", "Trading Window", "Closure of trading window"),
             ("SBIN", "Newspaper Publication", "Newspaper advertisement"), ("ITC", "Order", "Receipt of order worth Rs 400 cr"), ("TITAN", "Certificate", "Reg 74(5) certificate")]
+    hours_ago = [2, 48, 120, 240, 384, 528, 696]
     for i, (s, cat, sub) in enumerate(demo):
-        ts = (now - timedelta(hours=2 + i * 3)).strftime("%Y-%m-%d %H:%M:%S")
+        ts = (now - timedelta(hours=hours_ago[i])).strftime("%Y-%m-%d %H:%M:%S")
         c.execute("INSERT OR REPLACE INTO announcements VALUES (?,?,?,?,?,?,?,?,?)", (f"demo:{i}", s, "DEMO", ts, cat, sub, sub, None, "{}"))
     c.commit()
     print("seeded demo data")

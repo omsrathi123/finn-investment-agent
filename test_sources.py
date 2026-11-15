@@ -10,6 +10,7 @@ import app
 import llm
 import research
 import results
+import seed_demo
 import stock_detail
 
 
@@ -52,6 +53,26 @@ class SourceTests(unittest.TestCase):
         db = sqlite3.connect(":memory:")
         with patch.object(app, "conn", return_value=db):
             self.assertEqual(app.health(), {"status": "ok"})
+        db.close()
+
+    def test_feed_filters_announcements_by_requested_window(self):
+        db = sqlite3.connect(":memory:")
+        db.row_factory = sqlite3.Row
+        db.executescript(
+            "CREATE TABLE prices (symbol TEXT, date TEXT, open REAL, high REAL, low REAL, "
+            "close REAL, volume REAL, PRIMARY KEY (symbol, date));"
+            "CREATE TABLE announcements (id TEXT PRIMARY KEY, symbol TEXT, source TEXT, ts TEXT, "
+            "category TEXT, subject TEXT, detail TEXT, attachment_url TEXT, raw TEXT);"
+        )
+        with patch.object(seed_demo, "conn", return_value=db), \
+             patch.object(app, "conn", return_value=db):
+            seed_demo.seed_demo()
+            counts = [
+                sum(app.feed(hours)["counts"].values())
+                for hours in (24, 72, 168, 720)
+            ]
+
+        self.assertEqual(counts, [1, 2, 3, 7])
         db.close()
 
     def test_gemini_request_sends_api_key_in_header_not_url(self):
