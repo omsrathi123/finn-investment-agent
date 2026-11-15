@@ -8,6 +8,12 @@ FINN is a mobile-first prototype for an investor's daily workflow:
 - **Results:** extracts Revenue, EBITDA, PBT and PAT from a results filing; calculates QoQ/YoY in Python and links back to the filing.
 - **Research:** compares management guidance with later concall reporting and links to the source transcripts.
 
+## Website snapshot
+
+![FINN portfolio screen on a mobile-width viewport](static/portfolio-snapshot.png)
+
+This is a UI snapshot; prices shown are stored end-of-day values, not live quotes.
+
 ## Architecture
 
 FINN is a small, single-service prototype: a responsive browser UI talks to a FastAPI application, which reads/writes a local SQLite database and calls public data providers or Gemini only for specific workflows.
