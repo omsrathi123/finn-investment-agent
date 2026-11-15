@@ -15,17 +15,25 @@ table{width:100%;border-collapse:collapse;margin-top:8px}td,th{padding:5px 2px;t
 nav button{flex:1;border:0;background:none;padding:14px 0;color:var(--mut);border-radius:0}nav button.on{color:var(--tx);font-weight:700}
 .row{display:flex;gap:8px;align-items:center}input[type=range]{width:100%;padding:0}details summary{cursor:pointer;color:var(--mut)}
 .s-met{color:var(--g)}.s-missed{color:var(--r)}.s-partial{color:var(--a)}.s-unclear{color:var(--mut)}
+.stock-link{padding:0;border:0;background:none;color:var(--tx);font-weight:700;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.stock-link:active{color:var(--b)}.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.metric{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;min-width:0}
+.metric .label{font-size:11px;color:var(--mut)}.metric .value{font-size:16px;font-weight:700;margin-top:3px;overflow-wrap:anywhere}
+.chart{width:100%;height:auto;display:block}.list-link{display:block;color:var(--tx);padding:10px 0;border-bottom:1px solid var(--line)}
+.list-link:last-child{border:0}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px}
+@media(min-width:700px){main{max-width:760px;margin:0 auto}.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style></head><body>
 <header><h1>FINN</h1><select id="win"><option value="24">Last 24h</option><option value="72">3 days</option><option value="168">7 days</option><option value="720">30 days</option></select></header>
 <main id="m"></main>
-<nav><button data-t="feed" class="on">Feed</button><button data-t="alerts">Alerts</button><button data-t="ask">Ask FINN</button></nav>
+<nav><button data-t="portfolio">Portfolio</button><button data-t="feed" class="on">Feed</button><button data-t="alerts">Alerts</button><button data-t="ask">Ask FINN</button></nav>
 <script>
 const $=s=>document.querySelector(s),m=$('#m');let tab='feed',cfg={vol:2,move:4};
 const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const escAttr=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const safeHref=s=>{try{const u=new URL(s);return ['http:','https:'].includes(u.protocol)?esc(u.href):''}catch{return ''}};
-const J=async u=>{const r=await fetch(u);if(!r.ok)throw new Error((await r.json()).detail||r.status);return r.json()};
+const J=async(u,options)=>{const r=await fetch(u,options);let d;try{d=await r.json()}catch{d={}}if(!r.ok)throw new Error(d.detail||r.status);return d};
 const KIND={results:'Results',mgmt:'Management',ma:'M&A',capital:'Capital',risk:'Risk',order:'Order',rating:'Rating',other:'Other'};
-function item(a,cls){const href=safeHref(a.url);return `<div class="card ${cls}"><div class="top"><span class="sym">${esc(a.symbol)}</span><span class="tag">${a.source==='DEMO'?'DEMO · ':''}${KIND[a.kind]||'Other'}</span></div>
+function item(a,cls){const href=safeHref(a.url);return `<div class="card ${cls}"><div class="top"><button class="stock-link" data-stock="${escAttr(a.symbol)}">${esc(a.symbol)}</button><span class="tag">${a.source==='DEMO'?'DEMO · ':''}${KIND[a.kind]||'Other'}</span></div>
 <div style="margin:4px 0">${esc(a.title)}</div><div class="mut">${esc(a.detail)}</div><div class="mut">${esc(a.ts)} ${href?` · <a target="_blank" rel="noopener noreferrer" href="${href}">original filing</a>`:''}</div>
 ${a.kind=='results'&&a.url?`<button class="p" onclick="res('${a.id}',this)">Headline numbers</button><div></div>`:''}</div>`}
 async function res(id,b){b.disabled=1;b.textContent='Reading filing…';const d=b.nextElementSibling;
@@ -39,6 +47,31 @@ async function feed(){m.innerHTML='Loading…';const [d,s]=await Promise.all([J(
  ${d.notable.length?'<div class="sec">Notable</div>'+d.notable.map(a=>item(a,'not')).join(''):''}
  ${d.routine.length?`<details class="sec"><summary>${d.routine.length} routine filings</summary>${d.routine.map(a=>`<div class="mut" style="padding:6px 0;border-bottom:1px solid var(--line)"><b>${esc(a.symbol)}</b> ${esc(a.title)}</div>`).join('')}</details>`:''}
  ${!d.critical.length&&!d.notable.length&&!d.routine.length?'<div class="card mut">No filings in this window. Try a wider period or refresh the source data.</div>':''}`}
+const fmt=(n,unit='',digits=2)=>n==null?'Not available':`${Number(n).toLocaleString('en-IN',{maximumFractionDigits:digits})}${unit}`;
+function portfolio(){m.innerHTML='<div class="sec">Your portfolio</div><div class="mut">Tap a company for its price chart, valuation snapshot, filings and related news.</div><div id="stocks" class="card mut" style="margin-top:8px">Loading portfolio…</div>';
+ return J('/api/portfolio').then(stocks=>{$('#stocks').innerHTML=stocks.map(s=>`<button class="list-link" data-stock="${escAttr(s.symbol)}" style="width:100%;text-align:left"><div class="top"><b>${esc(s.symbol)}</b><span>${s.price==null?'No price history':`₹${fmt(s.price)}`}${s.change_pct==null?'':` <span class="${s.change_pct>=0?'up':'dn'}">${s.change_pct>0?'+':''}${fmt(s.change_pct,'%')}</span>`}</span></div><div class="mut">${s.price_as_of?`EOD ${esc(s.price_as_of)}`:'Price data unavailable'}</div></button>`).join('')||'Portfolio is empty.'}).catch(e=>$('#stocks').textContent=`Could not load portfolio: ${e.message}`)}
+function chartSvg(points){if(!points.length)return '<div class="mut">No stored end-of-day price history. Try Refresh.</div>';
+ const w=600,h=170,p=12,values=points.map(x=>Number(x.close)),lo=Math.min(...values),hi=Math.max(...values),span=hi-lo||1;
+ const coords=values.map((v,i)=>`${p+i*(w-2*p)/Math.max(1,values.length-1)},${h-p-(v-lo)*(h-2*p)/span}`).join(' ');
+ return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="End-of-day share price chart"><line x1="${p}" y1="${p}" x2="${w-p}" y2="${p}" stroke="#232a33"/><line x1="${p}" y1="${h-p}" x2="${w-p}" y2="${h-p}" stroke="#232a33"/><polyline fill="none" stroke="#5b9cff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="${coords}"/></svg><div class="top mut"><span>${esc(points[0].date)}</span><span>${esc(points[points.length-1].date)}</span></div>`}
+function metricCard(label,value,unit='',digits=2,prefix=''){return `<div class="metric"><div class="label">${label}</div><div class="value">${value==null?'Not available':`${prefix}${fmt(value,unit,digits)}`}</div></div>`}
+function stockMarkup(d){const m=d.metrics||{},p=d.profile||{},change=d.change_pct;
+ const warnings=(d.warnings||[]).map(x=>`<div class="mut" style="margin-top:5px">${esc(x)}</div>`).join('');
+ const quoteHref=safeHref(`https://finance.yahoo.com/quote/${encodeURIComponent(d.symbol)}.NS/`);
+ const filings=(d.filings||[]).map(f=>{const h=safeHref(f.url);return `<div class="card"><div class="top"><span class="tag">${esc(f.source)}${f.source==='DEMO'?' · SIMULATED':''}</span><span class="mut">${esc(f.ts)}</span></div><div style="margin:6px 0"><b>${esc(f.title)}</b></div><div class="mut">${esc(f.detail||f.category||'')}</div>${h?`<div style="margin-top:8px"><a target="_blank" rel="noopener noreferrer" href="${h}">Open original ${esc(f.source)} filing ↗</a></div>`:''}</div>`}).join('');
+ const news=(d.news||[]).map(n=>`<a class="list-link" target="_blank" rel="noopener noreferrer" href="${safeHref(n.url)}"><b>${esc(n.title)}</b><div class="mut">${esc(n.publisher)}${n.published_at?` · ${esc(n.published_at)}`:''}</div></a>`).join('');
+ return `<div class="toolbar"><button data-back>← Portfolio</button><button class="p" id="refresh" style="margin:0">Refresh sources</button></div>
+ <div class="sec">${esc(d.symbol)} · stock detail</div>${d.demo_data?'<div class="card not">Demo data is present in this workspace; seeded prices may be simulated. Verify all numbers against the linked sources.</div>':''}<div class="card"><div class="top"><div><b style="font-size:17px">${esc(p.name||d.symbol)}</b><div class="mut">${esc([p.sector,p.industry].filter(Boolean).join(' · ')||'Company profile not available')}</div></div><div style="text-align:right"><b>₹${d.price==null?'–':fmt(d.price)}</b><div class="${change==null?'mut':change>=0?'up':'dn'}">${change==null?'':`${change>0?'+':''}${fmt(change,'%')}`}</div></div></div><div class="mut" style="margin-top:7px">Latest stored price ${esc(d.price_as_of||'not available')} · end-of-day, not real-time</div>${p.summary?`<div style="margin-top:10px">${esc(p.summary)}</div>`:''}</div>
+ <div class="sec">Price history · 6 months</div><div class="card">${chartSvg(d.chart||[])}</div>
+ <div class="metrics">${metricCard('Market cap',m.market_cap_crore,' cr',2,'₹')}${metricCard('EBITDA · TTM',m.ebitda_crore,' cr',2,'₹')}${metricCard('Revenue · TTM',m.revenue_crore,' cr',2,'₹')}${metricCard('P/E · trailing',m.trailing_pe,'×')}${metricCard('P/E · forward',m.forward_pe,'×')}${metricCard('Price / book',m.price_to_book,'×')}${metricCard('EV / EBITDA',m.ev_to_ebitda,'×')}${metricCard('EBITDA margin',m.ebitda_margin_pct,'%')}${metricCard('Net margin',m.net_margin_pct,'%')}${metricCard('Debt / equity',m.debt_to_equity_pct,'%')}${metricCard('ROE',m.return_on_equity_pct,'%')}${metricCard('Dividend yield',m.dividend_yield_pct,'%')}</div>
+ <div class="mut" style="margin-top:8px">Yahoo Finance snapshot · fetched ${esc(d.yahoo_as_of||'not available')}${quoteHref?` · <a target="_blank" rel="noopener noreferrer" href="${quoteHref}">view source</a>`:''}. Ratios are provider-reported snapshots; unavailable values are not estimated.</div>
+ <div id="refresh-state">${warnings}</div><div class="sec">What stands out</div>${(d.analysis||[]).map(x=>`<div class="card">${esc(x)}</div>`).join('')}
+ <div class="sec">Exchange filings · newest first</div>${filings||'<div class="card mut">No stored filings for this company. Refresh to check NSE/BSE; blocked or empty sources are reported above.</div>'}
+ <div class="sec">Related news</div><div class="card">${news||'<div class="mut">No related news links returned by Yahoo Finance.</div>'}</div><div class="mut" style="margin:12px 0">Research aid only, not investment advice. Verify original filings and provider data before acting.</div>`}
+async function showStock(symbol){tab='stock';$('#win').hidden=true;document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x.dataset.t==='portfolio'));m.innerHTML='<div class="mut">Loading stock detail…</div>';try{const d=await J('/api/stocks/'+encodeURIComponent(symbol));m.innerHTML=stockMarkup(d);$('[data-back]').onclick=()=>{tab='portfolio';go()};$('#refresh').onclick=()=>refreshStock(symbol)}catch(e){m.innerHTML=`<div class="card crit">${esc(e.message)}</div><button data-back>← Portfolio</button>`;$('[data-back]').onclick=()=>{tab='portfolio';go()}}}
+async function refreshStock(symbol){const b=$('#refresh'),state=$('#refresh-state');b.disabled=true;b.textContent='Refreshing…';state.textContent='Checking NSE/BSE and Yahoo Finance…';
+ try{const d=await J('/api/stocks/'+encodeURIComponent(symbol)+'/refresh',{method:'POST'});m.innerHTML=stockMarkup(d);$('[data-back]').onclick=()=>{tab='portfolio';go()};$('#refresh').onclick=()=>refreshStock(symbol);if(d.refresh?.status==='cooldown')$('#refresh-state').textContent=`Refresh recently attempted. Try again in about ${d.refresh.retry_after_seconds}s.`;else $('#refresh-state').textContent=`Refresh complete · ${d.refresh.announcements_added_or_updated} filings checked via ${d.refresh.announcement_source||'NSE/BSE'}.`;if(d.warnings?.length)$('#refresh-state').innerHTML+=d.warnings.map(x=>`<div class="mut" style="margin-top:5px">${esc(x)}</div>`).join('')}
+ catch(e){b.disabled=false;b.textContent='Retry refresh';state.textContent=`Refresh failed: ${e.message}`}}
 async function alerts(){const state=await J('/api/status').catch(e=>({error:e.message}));m.innerHTML=`${state.demo_filings?'<div class="card not">Demo mode: seeded prices and filings are simulated, not live market data.</div>':''}${state.error?`<div class="mut">Data status unavailable: ${esc(state.error)}</div>`:''}<div class="card"><div>Volume ≥ <b id="vv">${cfg.vol}</b>× 20-day avg</div><input type=range min=1 max=6 step=.5 value=${cfg.vol} id=sv>
 <div style="margin-top:10px">Price move ≥ <b id="mv">${cfg.move}</b>%</div><input type=range min=1 max=10 step=.5 value=${cfg.move} id=sm></div><div id=al></div>`;
  const go=async()=>{cfg.vol=+$('#sv').value;cfg.move=+$('#sm').value;$('#vv').textContent=cfg.vol;$('#mv').textContent=cfg.move;
@@ -51,7 +84,8 @@ async function ask(){const u=await J('/api/universe').catch(()=>[]);
    $('#out').innerHTML=`<div class="card"><b>${esc(r.verdict)}</b><div class="mut">Calls: ${(r.calls_used||[]).map(esc).join(' → ')}</div><div class="mut">Sources: ${sources.join(' · ')||'None returned'}</div></div>`+
    (r.items||[]).map(i=>`<div class="card"><div class="top"><span>${esc(i.promise)}</span><b class="s-${esc(i.status)}">${esc(i.status)}</b></div><div style="margin:4px 0">${esc(i.delivered)}</div><div class="mut">“${esc(i.quote)}” — ${esc(i.promised_in)}</div></div>`).join('')+(r.watch?`<div class="card not"><span class="mut">Watch next</span><br>${esc(r.watch)}</div>`:'')}
   catch(e){$('#out').innerHTML=`<div class="card crit">${esc(e.message)}</div>`}}}
-const T={feed,alerts,ask},go=()=>T[tab]().catch(e=>m.innerHTML=`<div class="card crit">${esc(e.message)}</div>`);
-document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x==b));go()});
+const T={feed,alerts,ask,portfolio},go=()=>T[tab]().catch(e=>m.innerHTML=`<div class="card crit">${esc(e.message)}</div>`);
+m.addEventListener('click',e=>{const target=e.target.closest('[data-stock]');if(target)showStock(target.dataset.stock)});
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;$('#win').hidden=tab!=='feed';document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x==b));go()});
 $('#win').onchange=()=>tab=='feed'&&go();go();
 </script></body></html>

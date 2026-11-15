@@ -3,6 +3,7 @@
 FINN is a mobile-first prototype for an investor's daily workflow:
 
 - **Feed:** prioritised company announcements for a configurable time window; routine items are collapsed.
+- **Portfolio / stock detail:** tap a holding or feed symbol to see its stored EOD price chart, Yahoo Finance valuation/fundamental snapshot and related news links, plus NSE/BSE filings. Refresh checks public sources on demand with a 15-minute cooldown.
 - **Alerts:** configurable end-of-day volume and price-move thresholds.
 - **Results:** extracts Revenue, EBITDA, PBT and PAT from a results filing; calculates QoQ/YoY in Python and links back to the filing.
 - **Research:** compares management guidance with later concall reporting and links to the source transcripts.
@@ -22,6 +23,7 @@ uvicorn app:app --reload --port 8000
 Open [http://localhost:8000](http://localhost:8000). To open it on a phone on the same Wi-Fi, use the computer's LAN IP and start Uvicorn with `--host 0.0.0.0`.
 
 The seed script creates simulated prices and clearly marked demo filings so the feed and alert screens can be tried without scrapers. Do not treat seeded values as market data.
+Stock details accept other NSE tickers too. Yahoo Finance metrics/news are cached for 15 minutes; the manual refresh button can be blocked or rate-limited by public sources. Missing metrics are shown as unavailable rather than estimated.
 
 ## Deploy a shareable app
 

@@ -53,6 +53,27 @@ def bse_announcements(symbol, bse_code, days=30):
                         raw=json.dumps(d)))
     return out
 
+def fetch_symbol(symbol, bse_code=None, days=30):
+    errors, rows, source = [], [], None
+    try:
+        sess = _nse_session()
+        rows, source = nse_announcements(sess, symbol, days), "NSE"
+    except Exception as e:
+        errors.append(f"NSE failed ({type(e).__name__})")
+    if not rows and bse_code:
+        try:
+            rows, source = bse_announcements(symbol, bse_code, days), "BSE"
+        except Exception as e:
+            errors.append(f"BSE failed ({type(e).__name__})")
+    if rows:
+        c = conn()
+        c.executemany("""INSERT OR REPLACE INTO announcements
+            VALUES (:id,:symbol,:source,:ts,:category,:subject,:detail,:attachment_url,:raw)""", rows)
+        c.commit()
+    elif not errors:
+        errors.append("No announcements returned for this period")
+    return {"count": len(rows), "source": source, "warnings": errors}
+
 def fetch_all(portfolio=PORTFOLIO, days=30):
     c = conn()
     try:

@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from db import conn
 from classify import classify
 from alerts import spikes
+from config import PORTFOLIO
 app = FastAPI(title="FINN")
 
 @app.get("/healthz")
@@ -64,6 +65,47 @@ def research(symbol: str):
 
 @app.get("/api/universe")
 def universe(): return [r[0] for r in conn().execute("SELECT DISTINCT symbol FROM prices ORDER BY 1")]
+
+@app.get("/api/portfolio")
+def portfolio():
+    c = conn()
+    stocks = []
+    for symbol in PORTFOLIO:
+        rows = c.execute(
+            "SELECT date,close FROM prices WHERE symbol=? ORDER BY date DESC LIMIT 2",
+            (symbol,),
+        ).fetchall()
+        price = rows[0]["close"] if rows else None
+        previous = rows[1]["close"] if len(rows) > 1 else None
+        stocks.append({
+            "symbol": symbol,
+            "price": round(price, 2) if price is not None else None,
+            "change_pct": round((price / previous - 1) * 100, 2) if price is not None and previous else None,
+            "price_as_of": rows[0]["date"] if rows else None,
+        })
+    return stocks
+
+@app.get("/api/stocks/{symbol}")
+def stock_detail(symbol: str):
+    from stock_detail import get_stock_detail
+    try:
+        return get_stock_detail(symbol)
+    except ValueError as e:
+        raise HTTPException(404, str(e))
+    except Exception as e:
+        raise HTTPException(502, f"Could not load stock detail: {e}")
+
+@app.post("/api/stocks/{symbol}/refresh")
+def refresh_stock(symbol: str):
+    from stock_detail import refresh_stock_detail
+    try:
+        return refresh_stock_detail(symbol)
+    except ValueError as e:
+        raise HTTPException(404, str(e))
+    except RuntimeError as e:
+        raise HTTPException(409, str(e))
+    except Exception as e:
+        raise HTTPException(502, f"Could not refresh stock data: {e}")
 
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 @app.get("/")
