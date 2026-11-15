@@ -38,4 +38,4 @@ from labelled filings.
 
 **Source repository:** https://github.com/omsrathi123/finn-investment-agent  
 **Hosted app:** add the deployed URL here.  
-**AI build history:** attach the coding-agent / LLM conversation exports or share links.
+**AI build history:** see [aihistory.md](aihistory.md) for the available conversation history.
