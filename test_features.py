@@ -21,10 +21,10 @@ FIXTURE = Path(__file__).parent / "tests" / "fixtures" / "screener_TESTCO.html"
 NOW = datetime(2026, 11, 14, 18, 0, 0)
 
 
-def nse(seq, sym, desc, text, hours_ago, voice=None, url="https://nsearchives.nseindia.com/x.pdf"):
+def nse(seq, sym, desc, text, hours_ago, voice=None, url="https://nsearchives.nseindia.com/x.pdf", name=None):
     ts = (NOW - timedelta(hours=hours_ago)).strftime("%d-%b-%Y %H:%M:%S")
     return {"seq_id": str(seq), "symbol": sym, "desc": desc, "attchmntText": text, "an_dt": ts,
-            "attchmntFile": url, "sm_name": f"{sym} Limited", "voiceSummary": voice}
+            "attchmntFile": url, "sm_name": name or f"{sym} Limited", "voiceSummary": voice}
 
 
 class TempDB(unittest.TestCase):
@@ -260,3 +260,67 @@ class AskTests(TempDB):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ChatTests(TempDB):
+    def setUp(self):
+        super().setUp()
+        import chat
+        self.chat = chat
+        self.load([nse(1, "MAXHEALTH", "Change in Management",
+                       "Max Healthcare has informed the Exchange about appointment of Dr. Dharmender Kumar as "
+                       "Director & Chief - Public Affairs, identified as Senior Management Personnel", 30, url=None,
+                       name="Max Healthcare Institute Limited"),
+                   nse(2, "CDSL", "Acquisition", "Acquisition of 51% stake in ABC Pvt Ltd", 20)])
+        c = db.conn()
+        start = datetime(2026, 10, 19)  # session 25 = 13 Nov, the day of the CDSL filing
+        for sym, last in (("CDSL", 108), ("MAXHEALTH", 99)):
+            c.executemany("INSERT INTO prices VALUES (?,?,?,?,?,?,?)",
+                          [(sym, (start + timedelta(days=i)).strftime("%Y-%m-%d"), 100, 100, 100,
+                            last if i == 25 else 100, 3000 if i == 25 else 1000) for i in range(26)])
+        c.commit()
+
+    def test_replies_without_a_model_key(self):
+        with patch.object(self.chat, "has_key", return_value=False), patch("ask.has_key", return_value=False), \
+                patch("research.overview", side_effect=RuntimeError("offline")):
+            r = self.chat.chat("how is my portfolio doing?")
+            self.assertEqual(r["intent"], "portfolio")
+            self.assertIn("holdings closed higher", r["reply"])
+            r = self.chat.chat("who joined Max Healthcare?")
+            self.assertEqual((r["intent"], r["symbol"]), ("people", "MAXHEALTH"))
+            self.assertIn("Dharmender Kumar", r["reply"])
+            r = self.chat.chat("why did CDSL move?")
+            self.assertIn("+8.0%", r["reply"])
+            self.assertIn("same day as its m&a filing", r["reply"])
+            self.assertEqual(r["engine"], "rules")
+            self.assertTrue(r["suggestions"])
+            self.assertEqual(self.chat.chat("hello")["intent"], "greet")
+
+    def test_follow_up_uses_the_company_in_context(self):
+        with patch.object(self.chat, "has_key", return_value=False), patch("ask.has_key", return_value=False), \
+                patch("research.section", return_value={"read": "Debt/equity 0.10×."}) as sec:
+            r = self.chat.chat("what about their debt?", context_symbol="CDSL")
+        self.assertEqual((r["intent"], r["symbol"]), ("balance", "CDSL"))
+        sec.assert_called_once_with("CDSL", "balance")
+        self.assertIn("Debt/equity", r["reply"])
+
+    def test_model_writes_reply_from_facts_and_history(self):
+        hist = [{"role": "user", "text": "tell me about CDSL"}, {"role": "model", "text": "CDSL closed at ..."}]
+        with patch.object(self.chat, "has_key", return_value=True), patch("ask.has_key", return_value=False), \
+                patch("research.overview", side_effect=RuntimeError("offline")), \
+                patch.object(self.chat, "ask_text", return_value="CDSL jumped **8%** on 3× volume.") as model:
+            r = self.chat.chat("why did CDSL move?", hist)
+        self.assertEqual(r["engine"], "model")
+        self.assertEqual(r["reply"], "CDSL jumped **8%** on 3× volume.")
+        prompt, model_name, system, history = model.call_args.args
+        self.assertIn("recent_unusual_moves", prompt)
+        self.assertEqual(model_name, self.chat.SMART)  # "why" questions get the reasoning model
+        self.assertIn("ONLY the FACTS", system)
+        self.assertEqual(history, hist)
+
+    def test_model_failure_falls_back_to_rules(self):
+        with patch.object(self.chat, "has_key", return_value=True), patch("ask.has_key", return_value=False), \
+                patch.object(self.chat, "ask_text", side_effect=RuntimeError("quota")):
+            r = self.chat.chat("any unusual moves?")
+        self.assertEqual(r["engine"], "rules")
+        self.assertIn("CDSL", r["reply"])

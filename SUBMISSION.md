@@ -16,8 +16,9 @@
 
 *Pull:* all eight research sections for any NSE ticker. Four are computed straight from the statements at zero model
 cost. Business snapshot, guidance, promised-vs-delivered (transcripts checked against actual quarterly numbers) and
-bull/bear read only primary documents. *Ask* routes typed or spoken questions to the same cards, and the digest can
-be read aloud.
+bull/bear read only primary documents. *Ask FINN* is a conversational copilot, typed or spoken, that keeps the
+company in context across follow-ups. It answers from facts gathered by FINN's own tools (rules first; the model only
+rewrites from those facts) and attaches the same cards used across the app. It keeps answering without a model key.
 
 **Key decisions.**
 - Rules, not a model, for anything that has to be fast, cheap and auditable: classification, scoring, clustering,

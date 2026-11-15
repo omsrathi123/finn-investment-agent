@@ -153,7 +153,8 @@ def brief(hours=24):
             summ = SENT.split(x["summary"] or x["why"])[0].rstrip(".")
             lines.append(f"{x['symbol']}, {x['label'].lower()}: {summ}.")
     if moves:
-        lines.append("Unusual moves: " + "; ".join(f"{m['symbol']} {m['move_pct']:+.1f}% ({m['ts']})" for m in moves) + ".")
+        from chat import _d
+        lines.append("Unusual moves: " + "; ".join(f"{m['symbol']} {m['move_pct']:+.1f}% ({_d(m['ts'])})" for m in moves) + ".")
     if d["counts"]["routine"]:
         lines.append(f"{d['counts']['routine']} routine filings hidden.")
     return {"text": " ".join(lines), "lines": lines, "hours": hours, "top": crit[:4], "moves": moves}

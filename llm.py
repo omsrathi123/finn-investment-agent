@@ -109,3 +109,25 @@ def ask_grounded(prompt, model=FAST):
     out = {"text": text.strip(), "sources": sources[:5]}
     key.write_text(json.dumps(out))
     return out
+
+
+def ask_text(prompt, model=FAST, system=None, history=None):
+    """Cached plain-text call with an optional system instruction and chat history
+    (list of {"role": "user"|"model", "text": str}). Used for Ask FINN replies."""
+    history = history or []
+    key = _cache_path(model, json.dumps([system, history, prompt]), "llm_text")
+    if key.exists():
+        _record(model, "hit")
+        return json.loads(key.read_text())["text"]
+    contents = [{"role": h["role"], "parts": [{"text": h["text"]}]} for h in history if h.get("text")]
+    contents.append({"role": "user", "parts": [{"text": prompt}]})
+    body = {"contents": contents, "generationConfig": {"temperature": 0.3, "maxOutputTokens": 600}}
+    if system:
+        body["systemInstruction"] = {"parts": [{"text": system}]}
+    data = _post(model, body)
+    cand = (data.get("candidates") or [{}])[0]
+    text = "".join(p.get("text", "") for p in (cand.get("content") or {}).get("parts", [])).strip()
+    if not text:
+        raise RuntimeError("The model returned an empty reply")
+    key.write_text(json.dumps({"text": text}))
+    return text

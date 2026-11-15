@@ -93,7 +93,8 @@ def result_card(ann_id):
     sq = _screener_quarter(row["symbol"], period)
     if extracted is None:
         if not sq:
-            raise ValueError(note or "No readable filing and no Screener quarterly data for this period")
+            raise ValueError(("The filing PDF needs a model key to read" if not has_key() else "The filing couldn't be read")
+                             + ", and Screener's quarterly table isn't reachable right now. Open the filing to see the numbers.")
         extracted = {"quarter": sq["quarter_col"], "unit": "Rs crore", **sq["metrics"]}
         source = "screener"
 

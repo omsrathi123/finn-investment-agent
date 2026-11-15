@@ -200,6 +200,16 @@ def research_section(symbol: str, section: str):
         _err(e)
 
 
+@app.post("/api/chat")
+def chat_endpoint(body: dict = Body(...)):
+    from chat import chat
+    try:
+        return chat(body.get("message"), body.get("history"), body.get("symbol"))
+    except Exception as e:  # the chat must always answer something
+        return {"reply": f"I hit a problem answering that ({type(e).__name__}: {e}). Try rephrasing, or ask about a specific company.",
+                "cards": [], "suggestions": ["What changed this week?"], "engine": "error"}
+
+
 @app.get("/api/ask")
 def ask(q: str):
     from ask import answer

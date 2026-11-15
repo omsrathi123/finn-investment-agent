@@ -13,14 +13,21 @@ It works in the two modes the brief asks for:
 | **Push · results** | Revenue, EBITDA, PBT, PAT from the actual results filing (cheap model), QoQ/YoY computed in code, cross-checked against Screener's quarterly table. No key → Screener numbers, labelled. | "Headline numbers" on any results item |
 | **Push · management change** | Who is coming in and where from: name/role from the filing headline (regex, free) → the filing's own SEBI profile annexure (cheap model) → web-grounded background with sources (Gemini + Google Search) → LinkedIn search link. | "Who is this?" |
 | **Pull · research** | All eight menu items for **any NSE ticker** on Screener: business snapshot, financial snapshot, trajectory, balance sheet, cash quality, guidance, promised-vs-delivered, bull vs bear. | Research |
-| **Ask** | One box, typed or spoken (Web Speech API, en-IN), routed to the same cards. Rules route most questions for free; the cheap model only breaks ties. | Ask |
+| **Ask FINN (chat)** | A conversational copilot, typed or spoken (en-IN voice in, optional read-aloud). It remembers the company you're discussing ("what about their debt?"), answers with the same cards used across the app, and suggests follow-ups. Every reply is grounded: FINN's tools gather the facts, a factual answer is composed from them, and with a key the model rewrites it conversationally from only those facts plus the chat history (`chat.py`). Without a key, or if the model fails, it still answers. A floating Ask button on every screen opens it in context. | Ask, or the Ask button |
 
 <p>
 <img src="docs/today.png" width="200" alt="Today: windowed digest with materiality scores">
 <img src="docs/alerts.png" width="200" alt="Alerts: triggered price, volume and filing alerts">
 <img src="docs/rules.png" width="200" alt="Alert rules sheet">
 <img src="docs/holdings.png" width="200" alt="Holdings with 30-session sparklines">
+<img src="docs/ask.png" width="200" alt="Ask FINN welcome screen">
+<img src="docs/chat.png" width="200" alt="Ask FINN conversation with a holdings table">
+<img src="docs/today-dark.png" width="200" alt="Today in dark mode">
 </p>
+
+**Design notes.** One family (Instrument Sans) with tabular figures. The materiality score is the visual anchor of
+every row, and the Today hero states how much was filtered ("4 / 29 filings"). Hairline rows instead of a stack of cards. Light and dark themes follow the phone. On a quiet day the default view widens itself and says so,
+instead of opening on an empty screen. On desktop the app is shown framed at phone width with a short explainer.
 
 ## Primary sources only on the pull side
 
@@ -86,7 +93,8 @@ not simulated ones. `python run_day1.py` refreshes data and the snapshot. `seed_
 | `GET /api/push/poll?since=` · `POST /api/live/refresh` | Throttled live tick / forced NSE check |
 | `GET /api/results/{id}` · `GET /api/people/{id}` | Push enrichment |
 | `GET /api/research/{symbol}` · `GET /api/research/{symbol}/{section}` | Pull research (overview + lazy sections) |
-| `GET /api/ask?q=` | Text/voice router |
+| `POST /api/chat` `{message, history, symbol}` | Conversational reply + cards + follow-ups |
+| `GET /api/ask?q=` | Lightweight intent router |
 | `GET /api/portfolio` · `GET /api/stocks/{symbol}` · `POST /api/stocks/{symbol}/refresh` | Holdings and stock detail |
 | `GET /api/status` · `GET /api/usage` · `GET /healthz` | Freshness, watcher state, model spend |
 
@@ -113,7 +121,7 @@ Without it, the digest, alerts, live feed, the four computed research sections, 
 | `FINN_LIVE_INTERVAL` | `300` | Seconds between live NSE polls |
 | `FINN_DB_PATH` / `FINN_CACHE_DIR` | `data/finn.db` / `data/cache` | Storage |
 
-Tests: `python -m unittest -v test_sources test_features` (28 tests; CI runs them on every push).
+Tests: `python -m unittest -v test_sources test_features` (32 tests; CI runs them on every push).
 
 ## Deploy
 

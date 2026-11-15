@@ -135,11 +135,101 @@ nav button[aria-current=page]{color:var(--ink);font-weight:700}
 .badge{position:absolute;top:8px;left:calc(50% + 6px);min-width:16px;height:16px;border-radius:8px;background:var(--sig);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
 .badge:empty{display:none}
 .toast{position:fixed;left:50%;bottom:calc(var(--nav) + 16px);transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 14px;border-radius:10px;font-size:14px;z-index:30;max-width:90vw}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- dark mode (follows the phone) ---------- */
+@media (prefers-color-scheme:dark){
+  :root{--paper:#12171D;--sheet:#1A2128;--ink:#E7EBEE;--slate:#97A3AE;--rule:#2B343D;--faint:#222A32;
+    --sig:#8F95FF;--sig-wash:#262B52;--up:#3FC48D;--dn:#F27C70;--warn:#E8B65A;--warn-wash:#3A2E14;--navbg:rgba(18,23,29,.94)}
+  .note{color:#F1D9A6}.flag.ok{background:#173A2B}.flag.bad{background:#40211E}.bars div.alt{background:#4A5560}
+  .scrim.open{background:rgba(0,0,0,.5)}
+}
+nav{background:var(--navbg,rgba(241,243,240,.96))}
+/* ---------- skeletons ---------- */
+.sk{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--faint) 0%,var(--rule) 50%,var(--faint) 100%);background-size:200% 100%;animation:sh 1.2s linear infinite;margin:10px 0}
+.sk.h{height:30px;width:70%}.sk.s{width:45%}
+@keyframes sh{to{background-position:-200% 0}}
+/* ---------- the noise funnel: how much FINN filtered ---------- */
+.funnel{margin:14px 0 4px}
+.funnel .nums{display:block}
+.funnel .big{font-size:56px;font-weight:700;line-height:.95;letter-spacing:-.03em;color:var(--sig)}
+.funnel .big small{font-size:28px;color:var(--slate);font-weight:600;letter-spacing:-.01em}
+.funnel .from{font-size:20px;line-height:1.25;font-weight:600;margin-top:6px;max-width:22ch}
+.funnel .from s{text-decoration-thickness:1px}
+.fbar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin-top:12px;background:var(--faint)}
+.fbar i{display:block;height:100%}
+.fbar .c{background:var(--sig)}.fbar .n{background:var(--slate)}.fbar .r{background:var(--rule)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--slate);margin-top:6px;flex-wrap:wrap}
+.legend b{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;vertical-align:0}
+.intro{background:var(--sheet);border:1px solid var(--rule);border-radius:14px;padding:14px 16px;margin:12px 0}
+.intro p{margin:4px 0}
+/* ---------- view change: one orchestrated fade ---------- */
+.enter{animation:enter .22s ease-out}
+@keyframes enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* ---------- Ask FINN chat ---------- */
+.thread{display:flex;flex-direction:column;gap:18px;padding:8px 0 150px}
+.msg{display:flex;gap:10px;align-items:flex-start}
+.msg.user{justify-content:flex-end}
+.msg.user .bubble{background:var(--ink);color:var(--paper);border-radius:18px 18px 4px 18px;padding:9px 14px;max-width:82%}
+.av{flex:none;width:28px;height:28px;border-radius:9px;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-weight:700;font-size:13px;margin-top:2px}
+.av{position:relative}.av i{position:absolute;right:-3px;bottom:-3px;width:10px;height:10px;border-radius:50%;background:var(--sig);border:2px solid var(--paper)}
+.msg.bot .body{flex:1;min-width:0}
+.msg.bot .txt{font-size:16px;line-height:1.5}
+.msg.bot .txt p{margin:0 0 8px}.msg.bot .txt ul{margin:4px 0 8px;padding-left:18px}.msg.bot .txt li{margin:3px 0}
+.msg.bot .cards{margin-top:6px}
+.msg.bot .cards>*{margin-top:8px}
+.msg.bot .row{grid-template-columns:30px 1fr;padding:10px 0}.msg.bot .score{font-size:17px}.msg.bot .summ{-webkit-line-clamp:2;font-size:14px}
+.msg.bot .alert{padding:10px 0}
+.engine{font-size:11px;color:var(--slate);margin-top:6px}
+.follow{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.follow .chip{background:transparent;border-color:var(--sig);color:var(--sig)}
+.typing{display:inline-flex;gap:4px;padding:10px 0}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--slate);animation:bl 1s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.welcome h1{font-size:30px;max-width:16ch}
+.starters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.starter{text-align:left;background:var(--sheet);border:1px solid var(--rule);border-radius:14px;padding:12px;min-height:84px}
+.starter b{display:block;font-size:14px;margin-bottom:4px}.starter span{font-size:13px;color:var(--slate)}
+.dock{position:fixed;left:0;right:0;bottom:calc(var(--nav) + env(safe-area-inset-bottom));padding:10px 14px 10px;background:linear-gradient(to top,var(--paper) 70%,transparent);z-index:9}
+.dock form{max-width:640px;margin:0 auto;display:flex;gap:8px;align-items:center;background:var(--sheet);border:1px solid var(--rule);border-radius:16px;padding:6px 6px 6px 14px;box-shadow:0 4px 18px rgba(21,32,43,.08)}
+.dock input{flex:1;border:0;background:transparent;padding:8px 0;outline:none;min-width:0}
+.dock .ctx{max-width:640px;margin:0 auto 6px;font-size:12px;color:var(--slate);display:flex;gap:8px;align-items:center}
+.ib{width:38px;height:38px;border-radius:11px;border:0;background:transparent;display:grid;place-items:center;color:var(--slate)}
+.ib svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8}
+.ib.send{background:var(--ink);color:var(--paper)}
+.ib.on{background:var(--sig);color:#fff;animation:pulse 1.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,53,200,.45)}100%{box-shadow:0 0 0 12px rgba(46,53,200,0)}}
+.mini td,.mini th{font-size:13px}
+/* ---------- Ask anywhere ---------- */
+.fab{position:fixed;right:16px;bottom:calc(var(--nav) + env(safe-area-inset-bottom) + 14px);z-index:9;border:0;border-radius:99px;background:var(--ink);color:var(--paper);
+  padding:11px 16px 11px 12px;font-weight:600;font-size:14px;display:flex;gap:8px;align-items:center;box-shadow:0 6px 20px rgba(21,32,43,.25)}
+.fab .av{width:22px;height:22px;border-radius:7px;background:var(--paper);color:var(--ink);font-size:11px;margin:0}
+.hero-stats{display:flex;gap:18px;margin-top:10px;flex-wrap:wrap}
+.hero-stats div{font-size:13px;color:var(--slate)}.hero-stats b{display:block;font-size:20px;color:var(--ink)}
+/* ---------- desktop: show it as the phone app it is ---------- */
+.about{display:none}
+@media (min-width:980px){
+  body{background:radial-gradient(circle at 20% 10%,var(--faint),transparent 50%),var(--paper)}
+  main{max-width:430px;margin:24px auto 0;background:var(--paper);border:1px solid var(--rule);border-radius:28px 28px 0 0;min-height:calc(100vh - 24px);
+    box-shadow:0 20px 60px rgba(21,32,43,.12);padding-bottom:40px}
+  nav{left:50%;right:auto;transform:translateX(-50%);width:430px;border:1px solid var(--rule);border-radius:0 0 22px 22px;bottom:12px}
+  .dock{left:50%;right:auto;transform:translateX(-50%);width:430px;bottom:calc(var(--nav) + 12px)}
+  .fab{right:calc(50% - 200px);bottom:calc(var(--nav) + 26px)}
+  .sheet{left:50%;right:auto;width:430px;transform:translate(-50%,105%)}.sheet.open{transform:translate(-50%,0)}
+  .toast{bottom:calc(var(--nav) + 30px)}
+  .about{display:block;position:fixed;left:max(24px,calc(50% - 560px));top:64px;width:300px;color:var(--slate);font-size:14px}
+  .about h2{color:var(--ink);font-size:30px;margin:0 0 8px;letter-spacing:-.01em}
+  .about p{margin:0 0 12px}.about b{color:var(--ink)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
-<main id="m" tabindex="-1"></main>
+<aside class="about"><h2>FINN</h2><p>An investor's inbox for an NSE portfolio. It reads every exchange filing and end-of-day move, scores each one for materiality, and shows only what matters.</p>
+<p><b>Push:</b> Today groups each window's filings into events; Alerts fire once when your rules are crossed, fed by the live NSE announcements feed.</p>
+<p><b>Pull:</b> Research builds 8 views of any NSE company from its annual reports, concalls and statements. Ask FINN answers in chat, typed or spoken.</p>
+<p>Built mobile-first: open this page on your phone and add it to your home screen.</p></aside>
+<main id="m" tabindex="-1"></main><button class="fab" id="fab" hidden><span class="av">F</span><span id="fabt">Ask FINN</span></button>
 <div class="scrim" id="scrim"></div>
 <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Alert rules"></section>
 <nav aria-label="Sections">
@@ -211,31 +301,45 @@ function peoplePanel(p){
 /* ---------- Today: the windowed digest ---------- */
 const WINS=[[24,'24 hours'],[72,'3 days'],[168,'7 days'],[720,'30 days']];
 function winQuery(){const w=S.win;return w.start?`start=${w.start}&end=${w.end}`:`hours=${w.hours}`}
+const sk=(n=4)=>`<div class="sk h"></div><div class="sk s"></div>${'<div class="sk"></div><div class="sk s"></div>'.repeat(n)}`;
 async function today(){
   const w=S.win;
   m.innerHTML=`<div class="top"><span class="brand">FINN</span><span class="when">${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}</span></div>
+  ${store.get('intro',true)?`<div class="intro"><p><b>FINN reads every NSE filing for your 20 holdings and shows only what matters.</b></p><p class="sub">Each filing gets a materiality score out of 100. Related filings are grouped into one event, and routine paperwork is counted, not shown. Set alert rules in Alerts, research any company in Research, or just ask.</p><div class="acts"><button class="link" id="introok">Got it</button></div></div>`:''}
   <div class="chips" role="group" aria-label="Time window">${WINS.map(([h,l])=>`<button class="chip" data-win="${h}" aria-pressed="${!w.start&&w.hours==h}">${l}</button>`).join('')}<button class="chip" data-win="custom" aria-pressed="${!!w.start}">${w.start?`${w.start} → ${w.end}`:'Pick dates'}</button></div>
   <div id="custom" hidden style="gap:8px;margin-top:8px;align-items:center;display:flex"><input type="date" id="d1" aria-label="From"><input type="date" id="d2" aria-label="To"><button class="btn small" id="apply">Show</button></div>
-  <div id="body"><p class="empty">Loading your portfolio’s filings…</p></div>`;
-  $('#custom').hidden=true;
-  const span=w.start?'':`&hours=${w.hours}`;
-  const [d,b]=await Promise.all([J('/api/feed?'+winQuery()),J('/api/brief?hours='+(w.hours||24)).catch(()=>null)]);
-  const total=d.counts.critical+d.counts.notable+d.counts.routine;
+  <div id="body">${sk()}</div>`;
+  const io=$('#introok');if(io)io.onclick=()=>{store.set('intro',false);io.closest('.intro').remove()};
+  let [d,b]=await Promise.all([J('/api/feed?'+winQuery()),J('/api/brief?hours='+(w.hours||24)).catch(()=>null)]);
+  let widened=null;
+  if(!w.start&&!store.get('winChosen',false)&&!d.critical.length&&!d.notable.length){ // quiet day: don't open on an empty screen
+    let fallback=null; // prefer the first window with something that needs you, else the first with anything material
+    for(const [h,l] of WINS.filter(x=>x[0]>w.hours)){const d2=await J('/api/feed?hours='+h);
+      if(d2.critical.length){d=d2;widened=[h,l];break}if(!fallback&&d2.notable.length)fallback=[d2,[h,l]]}
+    if(!widened&&fallback){d=fallback[0];widened=fallback[1]}
+    if(widened)b=await J('/api/brief?hours='+widened[0]).catch(()=>null);
+    if(widened){S.win={hours:widened[0]};$$('[data-win]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.win==widened[0]))}}
+  const c=d.counts,total=c.critical+c.notable+c.routine,events=d.critical.length+d.notable.length;
+  const W=S.win,span=W.start?'in this range':`in the last ${WINS.find(x=>x[0]==W.hours)?.[1]||W.hours+' hours'}`;
+  const nextWin=!W.start&&WINS.find(x=>x[0]>W.hours);
+  const funnel=total?`<div class="funnel"><div class="nums"><div class="big">${events}<small> / ${total}</small></div><div class="from">${events===1?'event is':'events are'} worth your attention out of ${pl(total,'filing')} ${span}.</div></div>
+    <div class="fbar" role="img" aria-label="${c.critical} need you, ${c.notable} worth knowing, ${c.routine} routine"><i class="c" style="width:${c.critical/total*100}%"></i><i class="n" style="width:${c.notable/total*100}%"></i><i class="r" style="width:${c.routine/total*100}%"></i></div>
+    <div class="legend"><span><b style="background:var(--sig)"></b>${c.critical} need you</span><span><b style="background:var(--slate)"></b>${c.notable} worth knowing</span><span><b style="background:var(--rule)"></b>${c.routine} routine, hidden</span></div></div>`:'';
   let head;
-  if(!d.critical.length&&!d.notable.length){
-    head=`<h1>Nothing material ${w.start?'in this range':`in the last ${WINS.find(x=>x[0]==w.hours)?.[1]||w.hours+' hours'}`}.</h1>
-    <p class="sub">${total?`${total} routine filing${total>1?'s':''} came in; none needs you.`:'No filings from your holdings in this window.'} ${d.latest?`The latest filing on record is from ${esc(ago(d.latest))}.`:''}</p>
-    ${!w.start&&w.hours<720?`<button class="btn quiet small" data-win="${WINS.find(x=>x[0]>w.hours)[0]}" style="margin-top:8px">Widen to ${WINS.find(x=>x[0]>w.hours)[1]}</button>`:''}`;
+  if(!events){
+    head=`<h1>Nothing material ${span}.</h1>${funnel}<p class="sub">${total?'Only routine paperwork came in.':'No filings from your holdings in this window.'} ${d.latest?`The latest filing on record is from ${esc(ago(d.latest))}.`:''}</p>
+    ${nextWin?`<button class="btn quiet small" data-win="${nextWin[0]}" style="margin-top:8px">Widen to ${nextWin[1]}</button>`:''}`;
   }else{
-    head=`<h1>${d.critical.length?`${d.critical.length} thing${d.critical.length>1?'s':''} need${d.critical.length>1?'':'s'} you.`:'Nothing urgent.'}</h1>
-    <p class="sub">${pl(d.counts.critical+d.counts.notable,'material filing')}, grouped into ${pl(d.critical.length+d.notable.length,'event')}. ${d.counts.routine} routine hidden.</p>
-    <div class="acts"><button class="link" id="speak">Read me the brief</button></div>`;
+    head=`${funnel}
+    <div class="acts"><button class="link" id="speak">Read me the brief</button><button class="link" data-q="What changed ${S.win.hours>=720?'in the last 30 days':S.win.hours>=168?'this week':S.win.hours>=72?'in the last 3 days':'today'}?">Ask about it</button></div>`;
   }
+  if(widened)head=`<p class="sub" style="margin:14px 0 0">Nothing material in the last 24 hours, so here are the last ${widened[1]}.</p>`+head;
   $('#body').innerHTML=`${head}
    ${d.critical.length?`<h2>Needs you</h2>${d.critical.map(filingRow).join('')}`:''}
    ${d.notable.length?`<h2>Worth knowing</h2>${d.notable.map(filingRow).join('')}`:''}
-   ${d.routine.length?`<details class="routine"><summary>${pl(d.counts.routine,'routine filing')}, collapsed</summary><ul>${d.routine.map(r=>`<li><b>${esc(r.symbol)}</b> ${esc(r.summary||r.title)} <span class="sub">${esc(r.label)}</span></li>`).join('')}</ul></details>`:''}`;
+   ${d.routine.length?`<details class="routine"><summary>${pl(c.routine,'routine filing')}, collapsed</summary><ul>${d.routine.map(r=>`<li><b>${esc(r.symbol)}</b> ${esc(r.summary||r.title)} <span class="sub">${esc(r.label)}</span></li>`).join('')}</ul></details>`:''}`;
   const sp=$('#speak');if(sp&&b)sp.onclick=()=>speak(b.text,sp);
+  if(widened)S.win={hours:24};
 }
 function speak(text,btn){if(!('speechSynthesis' in window))return toast('Voice is not supported in this browser');
   if(speechSynthesis.speaking){speechSynthesis.cancel();btn&&(btn.textContent='Read me the brief');return}
@@ -245,7 +349,7 @@ function speak(text,btn){if(!('speechSynthesis' in window))return toast('Voice i
 
 /* ---------- Alerts: triggered pushes + rules ---------- */
 async function alerts(){
-  m.innerHTML='<p class="empty">Loading alerts…</p>';
+  m.innerHTML=sk(6);
   const d=await J('/api/inbox');setBadge(d.unread);
   const r=d.rules, wl=d.watcher.live||{};
   m.innerHTML=`<div class="top"><span class="brand">Alerts</span><button class="link" id="rules">Edit rules</button></div>
@@ -309,14 +413,18 @@ function spark(v){if(!v||v.length<2)return '';const lo=Math.min(...v),hi=Math.ma
   const pts=v.map((x,i)=>`${(i/(v.length-1)*84).toFixed(1)},${(26-(x-lo)/s*24).toFixed(1)}`).join(' ');
   return `<svg class="spark" viewBox="0 0 84 28" aria-hidden="true"><polyline fill="none" stroke="${v[v.length-1]>=v[0]?'var(--up)':'var(--dn)'}" stroke-width="1.6" points="${pts}"/></svg>`}
 async function holdings(){
-  m.innerHTML='<p class="empty">Loading holdings…</p>';
+  m.innerHTML=sk(8);
   const s=await J('/api/portfolio');const asof=s.find(x=>x.price_as_of)?.price_as_of;
-  const up=s.filter(x=>x.change_pct>0).length;
+  const up=s.filter(x=>x.change_pct>0).length,live=s.filter(x=>x.change_pct!=null);
+  const ew=live.length?live.reduce((a,x)=>a+x.change_pct,0)/live.length:null;
+  const bym=[...s].filter(x=>x.month_pct!=null).sort((a,b)=>b.month_pct-a.month_pct),best=bym[0]||{},worst=bym[bym.length-1]||{};
   m.innerHTML=`<div class="top"><span class="brand">Holdings</span><span class="when">EOD ${esc(asof||'')}</span></div>
-  <h1>${up} of ${s.length} closed higher.</h1><p class="sub">End-of-day prices. The line is the last 30 sessions; tap a company for filings, valuation and research.</p>
+  <h1>${up} of ${s.length} closed higher.</h1>
+  <div class="hero-stats"><div><b>${pct(ew)}</b>equal-weight day</div><div><b>${esc(best.symbol)} ${pct(best.month_pct)}</b>best, 30 sessions</div><div><b>${esc(worst.symbol)} ${pct(worst.month_pct)}</b>worst, 30 sessions</div></div>
+  <p class="sub" style="margin-top:12px">End-of-day prices. The line is the last 30 sessions; tap a company for filings, valuation and research.</p>
   <div style="margin-top:10px">${s.map(x=>`<button class="hold" data-stock="${esc(x.symbol)}"><span><b>${esc(x.symbol)}</b><br><span class="sub">${x.month_pct==null?'':`30 days ${x.month_pct>0?'+':''}${x.month_pct}%`}</span></span>${spark(x.spark)}<span class="px">₹${num(x.price,2)}<br>${pct(x.change_pct)}</span></button>`).join('')}</div>`}
 async function stock(sym){
-  S.tab='stock';markNav('holdings');m.innerHTML='<p class="empty">Loading '+esc(sym)+'…</p>';window.scrollTo(0,0);
+  S.tab='stock';S.stockSym=sym;$('.dock')?.remove();markNav('holdings');m.innerHTML=sk(6);window.scrollTo(0,0);
   let d;try{d=await J('/api/stocks/'+encodeURIComponent(sym))}catch(e){m.innerHTML=`<div class="note">${esc(e.message)}</div>`;return}
   const p=d.profile||{},mt=d.metrics||{};
   const fl=(d.filings||[]).map(f=>`<li style="padding:8px 0;border-top:1px solid var(--faint);list-style:none"><span class="kind">${esc(f.kind?.replace('_',' '))}</span> ${f.url?ext(f.url,f.title):esc(f.title)} <span class="sub">${esc(ago(toIso(f.ts)))}</span></li>`).join('');
@@ -343,7 +451,7 @@ async function research(sym){
   <div class="chips">${[...S.cfg.research_extra,...S.cfg.portfolio].map(s=>`<button class="chip" data-research="${s}" aria-pressed="${s===sym}">${s}</button>`).join('')}</div><div id="rb"></div>`;
   $('#rf').onsubmit=e=>{e.preventDefault();const v=$('#rs').value.trim().toUpperCase();if(v)research(v)};
   if(!sym){$('#rb').innerHTML='<p class="empty">Pick a company. The numbers sections are computed straight from its filings; the reading sections ask a model to read the annual report and concall transcripts, and only when you open them.</p>';return}
-  store.set('lastResearch',sym);$('#rb').innerHTML=`<p class="empty">Reading ${esc(sym)}’s financial statements…</p>`;
+  store.set('lastResearch',sym);$('#rb').innerHTML=sk(5);
   let o;try{o=await J('/api/research/'+encodeURIComponent(sym))}catch(e){$('#rb').innerHTML=`<div class="note">${esc(e.message)}</div>`;return}
   const docs=o.documents;
   $('#rb').innerHTML=`<h1>${esc(o.name||sym)}</h1><p class="sub">${o.basis?`${esc(o.basis)} figures`:''}${o.screener_url?` · ${ext(o.screener_url,'statements')}`:''} · ${docs.annual_reports.length?ext(docs.annual_reports[0].url,docs.annual_reports[0].label):'no annual report found'} · ${docs.transcripts.length} recent transcripts</p>
@@ -381,53 +489,98 @@ function renderSection(k,d){
   if(k==='bullbear')return `<div class="case"><div><h4 class="up">Bull</h4><ul>${(d.bull||[]).map(x=>`<li>${esc(x.point)}<small>${esc(x.evidence)}</small></li>`).join('')}</ul></div><div><h4 class="dn">Bear</h4><ul>${(d.bear||[]).map(x=>`<li>${esc(x.point)}<small>${esc(x.evidence)}</small></li>`).join('')}</ul></div></div>${d.swing_factor?`<p class="read"><b>Decides it:</b> ${esc(d.swing_factor)}</p>`:''}`;
   return `<pre>${esc(JSON.stringify(d,null,1))}</pre>`}
 
-/* ---------- Ask (text or voice) ---------- */
-const LOG=[];
+/* ---------- Ask FINN: conversational copilot ---------- */
+const CHAT=store.get('chat',{msgs:[],symbol:null,speak:false});
+const saveChat=()=>store.set('chat',{...CHAT,msgs:CHAT.msgs.slice(-30)});
+const ICON={send:'<svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg>',mic:'<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  spk:'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>',mute:'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>',
+  plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>'};
+const STARTERS=[['Today','What changed this week?'],['Moves','Any unusual moves?'],['Portfolio','How is my portfolio doing?'],['People','Who joined Max Healthcare?'],['Results','Bharti Airtel results'],['Research','Did Dixon deliver on guidance?']];
+function md(t){const e=esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');const out=[];let list=[];
+  e.split(/\n+/).forEach(l=>{const m2=/^\s*[-•*]\s+(.*)/.exec(l);if(m2)list.push(`<li>${m2[1]}</li>`);else{if(list.length){out.push(`<ul>${list.join('')}</ul>`);list=[]}if(l.trim())out.push(`<p>${l}</p>`)}});
+  if(list.length)out.push(`<ul>${list.join('')}</ul>`);return out.join('')}
+function cardsHtml(cards){return (cards||[]).map(c=>{
+  if(c.type==='filings')return c.items.map(filingRow).join('');
+  if(c.type==='alerts')return c.items.map(alertRow).join('');
+  if(c.type==='results')return `<div class="expand">${resultsPanel(c.data)}</div>`;
+  if(c.type==='people')return `<div class="expand">${peoplePanel(c.data)}</div>`;
+  if(c.type==='section')return `<div class="panel">${renderSection(c.key,c.data)}</div>`;
+  if(c.type==='holdings')return `<div class="panel"><table class="mini"><tr><th>Holding</th><th>Close</th><th>Day</th><th>~1 month</th></tr>${c.items.map(x=>`<tr><td><button class="tick" data-stock="${esc(x.symbol)}">${esc(x.symbol)}</button></td><td>₹${num(x.close,2)}</td><td>${pct(x.day_pct)}</td><td>${pct(x.month_pct)}</td></tr>`).join('')}</table></div>`;
+  if(c.type==='stock')return `<div class="acts"><button class="btn small" data-research="${esc(c.symbol)}">Open ${esc(c.symbol)} research</button><button class="btn quiet small" data-stock="${esc(c.symbol)}">Price & filings</button></div>`;
+  return ''}).join('')}
+function msgHtml(x){
+  if(x.role==='user')return `<div class="msg user"><div class="bubble">${esc(x.text)}</div></div>`;
+  return `<div class="msg bot"><div class="av">F<i></i></div><div class="body"><div class="txt">${md(x.text)}</div><div class="cards">${cardsHtml(x.cards)}</div>
+   ${x.suggestions?.length?`<div class="follow">${x.suggestions.map(q=>`<button class="chip" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>`:''}
+   ${x.engine?`<div class="engine">${x.engine==='model'?'Written by the model from the facts shown':'Answered from FINN’s data, no model call'}${x.symbol?` · about ${esc(x.symbol)}`:''}</div>`:''}</div></div>`}
 function ask(){
-  m.innerHTML=`<div class="top"><span class="brand">Ask FINN</span><span class="when">Type or talk</span></div>
-  <h1>What do you want to know?</h1><div class="suggest">${['What changed this week?','Any unusual moves?','Bharti Airtel results','Who joined Max Healthcare?','Is Polycab’s cash real?','Did Dixon deliver on guidance?','Bull and bear on TRENT'].map(s=>`<button class="chip" data-q="${esc(s)}">${esc(s)}</button>`).join('')}</div>
-  <div class="log" id="log">${LOG.join('')}</div>
-  <form class="composer" id="cf"><input id="q" placeholder="Ask about your portfolio or any NSE company" autocomplete="off" aria-label="Question"><button type="button" class="mic" id="mic" aria-label="Speak your question">🎙</button><button class="btn">Ask</button></form>`;
-  $('#cf').onsubmit=e=>{e.preventDefault();const q=$('#q').value.trim();if(q){$('#q').value='';askQ(q)}};
+  const hr=new Date().getHours(),greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  m.innerHTML=`<div class="top"><span class="brand">Ask FINN</span><span class="acts" style="margin:0;gap:4px">
+    <button class="ib" id="spk" aria-label="${CHAT.speak?'Stop reading replies aloud':'Read replies aloud'}" aria-pressed="${CHAT.speak}">${CHAT.speak?ICON.spk:ICON.mute}</button>
+    <button class="ib" id="newc" aria-label="New conversation">${ICON.plus}</button></span></div>
+  <div class="thread" id="thread">${CHAT.msgs.length?CHAT.msgs.map(msgHtml).join(''):`<div class="welcome"><h1>${greet}. What do you want to know?</h1>
+   <p class="sub">I answer from your portfolio’s NSE filings, prices and alert rules, and from any company’s own reports and concall transcripts. Type or tap the mic.</p>
+   <div class="starters">${STARTERS.map(([t,q])=>`<button class="starter" data-q="${esc(q)}"><b>${t}</b><span>${esc(q)}</span></button>`).join('')}</div></div>`}</div>`;
+  let dock=$('.dock');if(!dock){dock=document.createElement('div');dock.className='dock';document.body.append(dock)}
+  dock.innerHTML=`${CHAT.symbol?`<div class="ctx">Talking about <b>${esc(CHAT.symbol)}</b><button class="link" id="clr" style="font-size:12px">clear</button></div>`:''}
+   <form id="cf"><input id="q" placeholder="${CHAT.symbol?`Ask about ${esc(CHAT.symbol)} or anything else`:'Ask about your portfolio or any NSE company'}" autocomplete="off" aria-label="Message FINN" enterkeyhint="send">
+   <button type="button" class="ib" id="mic" aria-label="Speak">${ICON.mic}</button><button class="ib send" aria-label="Send">${ICON.send}</button></form>`;
+  $('#cf').onsubmit=e=>{e.preventDefault();const q=$('#q').value.trim();if(q){$('#q').value='';chatSend(q)}};
+  $('#newc').onclick=()=>{CHAT.msgs=[];CHAT.symbol=null;saveChat();ask()};
+  $('#spk').onclick=()=>{CHAT.speak=!CHAT.speak;saveChat();if(!CHAT.speak&&'speechSynthesis' in window)speechSynthesis.cancel();ask()};
+  const clr=$('#clr');if(clr)clr.onclick=()=>{CHAT.symbol=null;saveChat();ask()};
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition,mic=$('#mic');
-  if(!SR)mic.hidden=true;else mic.onclick=()=>{const r=new SR();r.lang='en-IN';r.interimResults=false;mic.classList.add('on');r.onresult=e=>{askQ(e.results[0][0].transcript,true)};r.onend=()=>mic.classList.remove('on');r.onerror=()=>{mic.classList.remove('on');toast('Did not catch that')};r.start()}}
-async function askQ(q,voice){
-  const log=$('#log');const me=`<div class="me">${esc(q)}</div>`;LOG.push(me);log.insertAdjacentHTML('beforeend',me+'<div class="bot" id="pending"><span class="sub">Thinking…</span></div>');
-  const box=$('#pending');box.removeAttribute('id');
-  try{const r=await J('/api/ask?q='+encodeURIComponent(q));box.innerHTML=await renderAnswer(r);if(voice&&r.text)speak(r.text)}
-  catch(e){box.innerHTML=`<div class="note">${esc(e.message)}</div>`}
-  LOG.push(box.outerHTML);box.scrollIntoView({behavior:'smooth',block:'nearest'})}
-async function renderAnswer(r){
-  const sym=r.symbol;
-  switch(r.intent){
-    case 'digest':{const b=await J('/api/brief?hours='+r.hours);return `<p class="read">${esc(b.text)}</p>${b.top.map(filingRow).join('')}`}
-    case 'alerts':{const d=await J('/api/inbox');const xs=d.alerts.filter(a=>a.kind==='price').slice(0,6);return xs.length?`<p class="read">Moves that crossed your thresholds this week:</p>${xs.map(alertRow).join('')}`:'<p class="read">No unusual moves at your current thresholds.</p>'}
-    case 'results':return r.id?`<p class="read">${esc(r.text)}</p><div class="expand">${resultsPanel(await J('/api/results/'+encodeURIComponent(r.id)))}</div>`:`<p class="read">${esc(r.text)}</p>`;
-    case 'people':return r.id?`<p class="read">${esc(r.filing.summary||r.text)}</p><div class="expand">${peoplePanel(await J('/api/people/'+encodeURIComponent(r.id)))}</div>`:`<p class="read">${esc(r.text)}</p>`;
-    case 'business':case 'financial':case 'trajectory':case 'balance':case 'cash':case 'guidance':case 'nvn':case 'bullbear':{
-      const d=await J(`/api/research/${encodeURIComponent(sym)}/${r.intent}`);return `<p class="sub"><b>${esc(sym)}</b> · <button class="link" data-research="${esc(sym)}">open full research</button></p>${renderSection(r.intent,d)}`}
-    case 'stock':return `<p class="read">${esc(r.text||'')}</p><div class="acts"><button class="btn small" data-research="${esc(sym)}">Research ${esc(sym)}</button><button class="btn quiet small" data-stock="${esc(sym)}">Price & filings</button></div>`;
-    default:return `<p class="read">${esc(r.text||'Ask about filings, moves, results, management, or any section of company research.')}</p>`}}
+  if(!SR)mic.hidden=true;else mic.onclick=()=>{const r=new SR();r.lang='en-IN';r.interimResults=true;mic.classList.add('on');navigator.vibrate?.(10);
+    r.onresult=e=>{const t=[...e.results].map(x=>x[0].transcript).join('');$('#q').value=t;if(e.results[e.results.length-1].isFinal){$('#q').value='';chatSend(t,true)}};
+    r.onend=()=>mic.classList.remove('on');r.onerror=()=>{mic.classList.remove('on');toast('Didn’t catch that. Try again or type.')};r.start()};
+  scrollEnd(false)}
+function scrollEnd(smooth=true){requestAnimationFrame(()=>window.scrollTo({top:document.body.scrollHeight,behavior:smooth?'smooth':'auto'}))}
+let chatBusy=false;
+async function chatSend(q,voice){
+  if(chatBusy)return;
+  if(S.tab!=='ask')go('ask');
+  if(/^open (\w[\w&-]*) research$/i.test(q))return research(q.split(' ')[1].toUpperCase());
+  if(/^make alerts stricter$/i.test(q)){go('alerts');return setTimeout(openRules,400)}
+  chatBusy=true;const th=$('#thread');th.querySelector('.welcome')?.remove();
+  const history=CHAT.msgs.slice(-8).map(x=>({role:x.role==='user'?'user':'model',text:x.text}));
+  CHAT.msgs.push({role:'user',text:q});th.insertAdjacentHTML('beforeend',msgHtml({role:'user',text:q}));
+  th.insertAdjacentHTML('beforeend',`<div class="msg bot" id="typing"><div class="av">F<i></i></div><div class="typing" aria-label="FINN is thinking"><span></span><span></span><span></span></div></div>`);scrollEnd();
+  let r;try{r=await J('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,history,symbol:CHAT.symbol})})}
+  catch(e){r={reply:`I couldn’t reach the server (${e.message}). Check your connection and try again.`,cards:[],suggestions:[q]}}
+  $('#typing')?.remove();
+  const x={role:'bot',text:r.reply,cards:r.cards,suggestions:r.suggestions,engine:r.engine,symbol:r.symbol};
+  if(r.symbol)CHAT.symbol=r.symbol;CHAT.msgs.push(x);saveChat();
+  th.insertAdjacentHTML('beforeend',msgHtml(x));const el=th.lastElementChild,txt=el.querySelector('.txt'),rest=el.querySelectorAll('.cards,.follow,.engine');
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){ // reveal the reply word by word, then its cards
+    const words=r.reply.split(/(\s+)/);rest.forEach(n=>n.style.opacity=0);let i=0;txt.textContent='';
+    await new Promise(res=>{const step=()=>{i=Math.min(words.length,i+3);txt.textContent=words.slice(0,i).join('');if(i<words.length)setTimeout(step,16);else res()};step()});
+    txt.innerHTML=md(r.reply);rest.forEach(n=>{n.style.transition='opacity .25s';n.style.opacity=1})}
+  const ctx=$('.dock .ctx');if(r.symbol&&!ctx)ask();
+  scrollEnd();if((voice||CHAT.speak)&&r.reply)speak(r.reply.replace(/\*\*/g,''));chatBusy=false}
 
 /* ---------- navigation ---------- */
 const TABS={today,alerts,holdings,research:()=>research(),ask};
 function markNav(t){$$('nav button').forEach(b=>b.dataset.t===t?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'))}
+function chrome(){const fab=$('#fab'),onAsk=S.tab==='ask';if(!onAsk)$('.dock')?.remove();fab.hidden=onAsk;
+  const sym=S.tab==='stock'?S.stockSym:(S.tab==='research'?store.get('lastResearch',''):'');$('#fabt').textContent=sym?`Ask about ${sym}`:'Ask FINN';fab.dataset.sym=sym||''}
 function go(t){S.tab=t;markNav(t);
-  window.scrollTo(0,0);Promise.resolve(TABS[t]()).catch(e=>m.innerHTML=`<div class="note">${esc(e.message)}</div>`)}
+  window.scrollTo(0,0);chrome();m.classList.remove('enter');void m.offsetWidth;m.classList.add('enter');
+  Promise.resolve(TABS[t]()).then(chrome).catch(e=>m.innerHTML=`<div class="note">${esc(e.message)}</div>`)}
+$('#fab').onclick=()=>{const s2=$('#fab').dataset.sym;if(s2&&s2!==CHAT.symbol){CHAT.symbol=s2;saveChat()}go('ask');setTimeout(()=>$('#q')?.focus(),300)};
 $$('nav button').forEach(b=>b.onclick=()=>go(b.dataset.t));
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-stock],[data-results],[data-people],[data-win],[data-research],[data-section],[data-q],[data-go]');if(!t)return;
-  if(t.dataset.stock)return stock(t.dataset.stock);
+  if(t.dataset.stock)return stock(t.dataset.stock).then(chrome);
   if(t.dataset.results)return openResults(t,t.dataset.results);
   if(t.dataset.people)return openPeople(t,t.dataset.people);
   if(t.dataset.section)return loadSection(t);
   if(t.dataset.go)return go(t.dataset.go);
-  if(t.dataset.q)return askQ(t.dataset.q);
-  if(t.dataset.research){S.tab='research';markNav('research');window.scrollTo(0,0);return research(t.dataset.research)}
+  if(t.dataset.q)return chatSend(t.dataset.q);
+  if(t.dataset.research){S.tab='research';markNav('research');$('.dock')?.remove();window.scrollTo(0,0);return research(t.dataset.research).then(chrome)}
   if(t.dataset.win){if(t.dataset.win==='custom'){const c=$('#custom');c.hidden=!c.hidden;
       const to=new Date(),fr=new Date(Date.now()-6*864e5);$('#d1').value=S.win.start||fr.toISOString().slice(0,10);$('#d2').value=S.win.end||to.toISOString().slice(0,10);
-      $('#apply').onclick=()=>{S.win={start:$('#d1').value,end:$('#d2').value};store.set('win',S.win);today()};return}
-    S.win={hours:+t.dataset.win};store.set('win',S.win);today()}});
+      $('#apply').onclick=()=>{S.win={start:$('#d1').value,end:$('#d2').value};store.set('win',S.win);store.set('winChosen',true);today()};return}
+    S.win={hours:+t.dataset.win};store.set('win',S.win);store.set('winChosen',true);today()}});
 go('today');poll();
 </script>
 </body>
