@@ -4,8 +4,12 @@ import os
 from pathlib import Path
 
 ROOT = Path(__file__).parent
-CACHE = Path(os.getenv("FINN_CACHE_DIR") or ROOT / "data" / "cache")
-DB_PATH = Path(os.getenv("FINN_DB_PATH") or ROOT / "data" / "finn.db")
+if os.getenv("VERCEL") == "1":
+    CACHE = Path(os.getenv("FINN_CACHE_DIR") or "/tmp/finn-cache")
+    DB_PATH = Path(os.getenv("FINN_DB_PATH") or "/tmp/finn.db")
+else:
+    CACHE = Path(os.getenv("FINN_CACHE_DIR") or ROOT / "data" / "cache")
+    DB_PATH = Path(os.getenv("FINN_DB_PATH") or ROOT / "data" / "finn.db")
 CACHE.mkdir(parents=True, exist_ok=True)
 
 # symbol (NSE) -> BSE scrip code

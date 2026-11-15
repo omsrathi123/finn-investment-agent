@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
@@ -8,6 +9,11 @@ from classify import classify
 from alerts import spikes
 from config import PORTFOLIO
 app = FastAPI(title="FINN")
+
+if os.getenv("VERCEL") == "1":
+    from seed_demo import seed_demo
+    if not conn().execute("SELECT 1 FROM prices LIMIT 1").fetchone():
+        seed_demo()
 
 @app.get("/healthz")
 def health():

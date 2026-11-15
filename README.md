@@ -114,14 +114,19 @@ Stock details accept other NSE tickers too. Yahoo Finance metrics/news are cache
 
 **Source repository:** [omsrathi123/finn-investment-agent](https://github.com/omsrathi123/finn-investment-agent)
 
-GitHub hosts the source; Render runs the FastAPI backend. GitHub Pages alone cannot run FINN's Python API. This repository includes a Render Blueprint in `render.yaml` and a GitHub Actions workflow that runs focused tests on pushes and pull requests.
+### Vercel
 
-1. Sign in to Render with GitHub and choose **New → Blueprint**.
-2. Select `omsrathi123/finn-investment-agent`; Render reads its `render.yaml`.
-3. Set `GEMINI_API_KEY` in Render's environment settings to enable PDF and transcript analysis. Do not commit the key or put it in GitHub files.
-4. Share the deployed `*.onrender.com` URL with reviewers; the mobile-friendly app is served at `/`.
+1. Import this repository at [vercel.com/new](https://vercel.com/new) and deploy with the detected FastAPI preset and repository root.
+2. Add `GEMINI_API_KEY` in the Vercel project's environment variables to enable PDF and transcript analysis. Do not commit the key.
+3. Share the deployed `*.vercel.app` URL; the mobile-friendly app is served at `/`.
 
-The free service uses temporary storage. Demo data is seeded at startup, but manually fetched data and cached model/PDF results can be lost when the service restarts. Data refresh is not scheduled.
+Vercel runs the FastAPI app as serverless functions. SQLite and caches use `/tmp`; demo data is seeded when a new function instance starts. This storage is temporary and isolated per instance, so manual refreshes and cached results are not durable or shared across instances. Data refresh is not scheduled.
+
+### Render alternative
+
+The repository also includes a Render Blueprint in `render.yaml`. Sign in to Render with GitHub, choose **New → Blueprint**, select `omsrathi123/finn-investment-agent`, then set `GEMINI_API_KEY` in the service environment settings. Render's free service also uses temporary storage.
+
+GitHub Actions runs focused tests on pushes and pull requests. GitHub Pages alone cannot run FINN's Python API.
 
 `.gitignore` excludes local environments, `.env`, the SQLite database and fetched caches. The demo dataset can be recreated with `python seed_demo.py`.
 

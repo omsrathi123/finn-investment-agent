@@ -11,5 +11,5 @@ The prototype uses public NSE/BSE, Yahoo Finance and Screener.in sources. It is 
 Follow the local setup steps in [README.md](README.md). For live filing extraction and transcript research, configure `GEMINI_API_KEY` and refresh the source data. The seed data provides an offline walkthrough of the feed and alert screens.
 
 **Source repository:** https://github.com/omsrathi123/finn-investment-agent  
-**Hosted app:** Pending Render connection; add the public `*.onrender.com` URL after deployment.  
+**Hosted app:** Pending Vercel deployment; add the public `*.vercel.app` URL after deployment.
 **AI build history:** Attach the requested coding-agent/LLM conversation export or share link when submitting.
