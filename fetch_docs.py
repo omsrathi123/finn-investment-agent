@@ -1,32 +1,20 @@
-"""Find annual-report + concall-transcript links on screener.in for any NSE symbol."""
-import requests
-from bs4 import BeautifulSoup
-from config import HEADERS
+"""Annual-report + concall-transcript links from screener.in for any NSE symbol (shares the page cache)."""
 from db import conn
+from screener import company, doc_kind as _classify  # noqa: F401  (kept for older imports)
 
-def _classify(heading, label):
-    h, l = heading.lower(), label.lower()
-    if "annual" in h: return "annual_report"
-    if "concall" in h or "transcript" in l: 
-        return "transcript" if "transcript" in l else None
-    return None  # ppt / notes / rec etc. ignored for now
 
 def get_doc_links(symbol):
-    for suffix in ("consolidated/", ""):
-        r = requests.get(f"https://www.screener.in/company/{symbol}/{suffix}", headers=HEADERS, timeout=20)
-        if r.status_code == 200 and 'id="documents"' in r.text:
-            break
-    else:
-        raise RuntimeError(f"screener page / documents section not found for {symbol} (HTTP {r.status_code})")
-    soup = BeautifulSoup(r.text, "lxml")
-    sec = soup.find(id="documents")
-    out = []
-    for a in sec.find_all("a", href=True):
-        h3 = a.find_previous("h3")
-        kind = _classify(h3.get_text(" ", strip=True) if h3 else "", a.get_text(" ", strip=True))
-        if kind:
-            out.append((symbol, kind, " ".join(a.get_text().split()), a["href"]))
-    return out
+    return [(symbol, kind, label, url) for kind, label, url in company(symbol)["documents"]]
+
+
+def ensure_docs(symbol):
+    """Fetch document links on demand so research works on a ticker nobody pre-loaded."""
+    c = conn()
+    if not c.execute("SELECT 1 FROM documents WHERE symbol=? LIMIT 1", (symbol,)).fetchone():
+        rows = get_doc_links(symbol)
+        c.executemany("INSERT OR REPLACE INTO documents VALUES (?,?,?,?)", rows)
+        c.commit()
+
 
 def fetch_docs(symbols):
     c = conn()
@@ -40,6 +28,7 @@ def fetch_docs(symbols):
             print(f"[docs] {s}: {n_ar} annual reports, {n_tr} transcripts")
         except Exception as e:
             print(f"[docs] {s}: FAILED {e}")
+
 
 if __name__ == "__main__":
     from config import PORTFOLIO, RESEARCH_EXTRA

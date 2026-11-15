@@ -1,9 +1,9 @@
-import sqlite3
-from config import PORTFOLIO
+"""Remove simulated demo data (seed_demo.py) from the local database."""
+from db import conn
 
-c = sqlite3.connect("data/finn.db")
+c = conn()
 c.execute("DELETE FROM announcements WHERE source='DEMO'")
-marks = ",".join("?" * len(PORTFOLIO))
-c.execute(f"DELETE FROM prices WHERE symbol NOT IN ({marks})", list(PORTFOLIO))
+# seeded prices are flat bars (open = high = low = close) and include weekends; real EOD bars never are
+n = c.execute("DELETE FROM prices WHERE open=high AND high=low AND low=close").rowcount
 c.commit()
-print("cleaned")
+print(f"cleaned demo filings and {n} simulated price rows")

@@ -1,0 +1,3 @@
+{"name":"FINN — investor filings & alerts","short_name":"FINN","start_url":"/","display":"standalone",
+ "background_color":"#F1F3F0","theme_color":"#F1F3F0",
+ "icons":[{"src":"/static/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}

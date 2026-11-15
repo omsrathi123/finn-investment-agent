@@ -5,3 +5,5 @@ __pycache__/
 .env
 data/finn.db
 data/cache/
+
+!data/snapshot/

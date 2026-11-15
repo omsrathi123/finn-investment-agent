@@ -1,15 +1,40 @@
 # FINN — covering note
 
-FINN is a mobile-first prototype for reducing the noise in an investor's daily workflow. It brings a prioritised filing feed, configurable end-of-day price/volume alerts, a quarterly-results card, and transcript-based management-guidance research into one small interface.
+**What I built.** FINN is a mobile-first web app (installable as a PWA) that acts as an investor's inbox for a
+20-stock NSE portfolio. It covers both modes in the brief.
 
-I chose to focus on two complementary jobs: proactively surfacing changes across a portfolio, and letting an investor investigate whether management's past commentary was borne out later. Announcement tiers use auditable rules; model calls are reserved for extracting filing/transcript information and judging promise versus delivery. Results comparisons are calculated in code, and the interface links back to the underlying filings and transcripts.
+*Push:*
+- A windowed digest over any period, including custom dates. Every filing is mapped to the 17 reference categories,
+  given a visible 0–100 materiality score, clustered per event (a results day's 4–6 filings become one card), and
+  routine items are collapsed.
+- Triggered alerts on rules the investor sets (filing types, minimum materiality, volume multiple, daily move,
+  lookback), fed by a watcher on NSE's live announcements feed and an after-close EOD price pull. Each alert fires
+  once, as an inbox item and a system notification.
+- Two enrichments the brief asked for. Results filings get Revenue/EBITDA/PBT/PAT with QoQ/YoY computed in code and
+  cross-checked against Screener. Management changes get the incoming person's background, taken from the filing's
+  own profile annexure and a web-grounded lookup, with sources and a LinkedIn link.
 
-The prototype uses public NSE/BSE, Yahoo Finance and Screener.in sources. It is intentionally not a notification service: the investor can see the data's latest dates, but must refresh the data manually. Pull research currently focuses on concall transcripts rather than implementing every item in the challenge's research menu. Demo-seeded prices and filings are simulated and labeled; they are not real market information.
+*Pull:* all eight research sections for any NSE ticker. Four are computed straight from the statements at zero model
+cost. Business snapshot, guidance, promised-vs-delivered (transcripts checked against actual quarterly numbers) and
+bull/bear read only primary documents. *Ask* routes typed or spoken questions to the same cards, and the digest can
+be read aloud.
 
-## Try the prototype
+**Key decisions.**
+- Rules, not a model, for anything that has to be fast, cheap and auditable: classification, scoring, clustering,
+  routing, alerts and the brief. Models are kept for reading PDFs and for judgement.
+- Fast/smart routing, caching per prompt and per PDF page, keyword chunking of annual reports, and research sections
+  computed only when opened. `/api/usage` shows the spend.
+- Showing the score: the investor can see *why* something ranks where it does and tune the alert threshold to it.
+- A real-data snapshot ships with the repo, so the hosted demo shows actual NSE filings rather than simulated ones.
+- Numbers are never invented. When the filing and Screener disagree, both are shown.
 
-Follow the local setup steps in [README.md](README.md). For live filing extraction and transcript research, configure `GEMINI_API_KEY` and refresh the source data. The seed data provides an offline walkthrough of the feed and alert screens.
+**Left out deliberately.** Accounts and multi-user, closed-app Web Push (the service worker is ready; it needs a VAPID
+service), broker/news inputs on the research side, and intraday data (the brief is end-of-day).
+
+**Next.** Server-sent push with VAPID, per-holding position sizes so materiality weighs exposure, a weekly
+"promises tracker" that re-runs promised-vs-delivered after each concall, and evaluation sets for the taxonomy built
+from labelled filings.
 
 **Source repository:** https://github.com/omsrathi123/finn-investment-agent  
-**Hosted app:** Pending Vercel deployment; add the public `*.vercel.app` URL after deployment.
-**AI build history:** Attach the requested coding-agent/LLM conversation export or share link when submitting.
+**Hosted app:** add the deployed URL here.  
+**AI build history:** attach the coding-agent / LLM conversation exports or share links.

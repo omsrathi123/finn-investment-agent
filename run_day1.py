@@ -9,3 +9,7 @@ syms = sys.argv[1:] or ["RELIANCE", "TCS", "SBIN"]
 fetch_prices(syms)
 fetch_all({s: PORTFOLIO.get(s) for s in syms})
 fetch_docs(syms)
+
+# keep the committed snapshot in step with what was just fetched (deploys boot from it)
+import snapshot
+snapshot.export()
