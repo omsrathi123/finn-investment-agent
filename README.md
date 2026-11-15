@@ -6,6 +6,8 @@ into one event, routine paperwork is counted rather than shown, and every number
 
 **Live app:** [finnportfoliobyiom.vercel.app](https://finnportfoliobyiom.vercel.app/)
 
+**Project docs:** [Feature design](FEATURE_DESIGN.md) · [AI build history](aihistory.md) · [Submission note](SUBMISSION.md)
+
 It works in the two modes the brief asks for:
 
 | | What it does | Where |
